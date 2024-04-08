@@ -56,4 +56,41 @@
   justify-content: center;
   align-items: center;
   background: linear-gradient(143deg, #7835f9 16%, #c576f5 82%);
+  // outline: 10px solid white;
+  box-shadow:
+    0 0 0 5.5px var(--real-white),
+    0px -0.5px 0px 5.7px var(--forthary);
+}
+
+.modalComp {
+  position: absolute;
+  text-align: center;
+  width: 90%;
+  height: 30%;
+  top: 30%;
+  .modalContainer {
+    align-items: center;
+    justify-content: center;
+    p {
+      font-size: 1.2rem;
+    }
+  }
+  .fixed {
+    z-index: 1020;
+  }
+  .modalFooter {
+    width: 100%;
+  }
+}
+.policy {
+  padding: 1.2rem;
+}
+.passwordConatiner {
+  padding: 6rem 1.25rem;
+  .inputWrapper {
+    padding: 1.25rem 0 0 0;
+  }
+  .btn {
+    margin-top: 1.25rem;
+  }
 }

@@ -1,0 +1,14 @@
+.underline {
+  border: none;
+  margin: 20px 0 20px 0;
+  background-image: linear-gradient(
+    to right,
+    black 70%,
+    rgba(51, 153, 0, 0) 0%
+  );
+  background-position: bottom;
+  background-size: 12px 1px;
+  background-repeat: repeat-x;
+  padding-bottom: 5px;
+  width: 100%;
+}

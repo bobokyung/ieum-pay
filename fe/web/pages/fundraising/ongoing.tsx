@@ -3,7 +3,7 @@ import TabBar from '@/stories/TabBar';
 import styles from '@/styles/FundPage.module.scss';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import CardList from '@/components/funding/CardList';
+import { CardList } from '@/components/funding/CardList';
 import { axiosAuthApi } from '@/utils/instance';
 
 export default function Funding() {

@@ -4,7 +4,11 @@ import com.ieum.common.domain.Grade;
 import com.ieum.common.domain.Members;
 import com.ieum.common.domain.Paymoney;
 import com.ieum.common.dto.feign.funding.response.CurrentFundingResultResponseDTO;
+import com.ieum.common.dto.feign.funding.response.FundingInfoResponseDTO;
+import com.ieum.common.dto.feign.funding.response.FundingResultResponseDTO;
 import com.ieum.common.dto.feign.pay.dto.CardDTO;
+import com.ieum.common.dto.feign.pay.dto.HistoryDTO;
+import com.ieum.common.dto.feign.pay.response.HistoryResponseDTO;
 import com.ieum.common.dto.feign.pay.response.MainSummaryResponseDTO;
 import com.ieum.common.dto.member.req.LoginRequestDto;
 import com.ieum.common.dto.member.req.NicknameUpdateRequestDto;
@@ -13,9 +17,10 @@ import com.ieum.common.dto.member.req.SignupRequestDto;
 import com.ieum.common.dto.member.res.ProfileResponseDto;
 import com.ieum.common.dto.member.res.RecipientResponseDto;
 import com.ieum.common.dto.member.res.UpdatedNicknameResponseDto;
+import com.ieum.common.dto.response.MainResponseDTO;
 import com.ieum.common.dto.response.MemberSummaryResponseDTO;
 import com.ieum.common.dto.token.TokenInfo;
-import com.ieum.common.exception.PayMoneyCreationFailedException;
+import com.ieum.common.exception.pay.PayMoneyCreationFailedException;
 import com.ieum.common.exception.feign.PaymentServiceUnavailableException;
 import com.ieum.common.exception.member.ExistingPhoneNumberException;
 import com.ieum.common.exception.member.InvalidLoginAttemptException;
@@ -30,12 +35,17 @@ import com.ieum.common.repository.GradeRepository;
 import com.ieum.common.repository.MemberRepository;
 import com.ieum.common.repository.PaymoneyRepository;
 import com.ieum.common.util.CookieUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -48,7 +58,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class MemberService {
 
-    public static final String REFRESH_TOKEN = "refresh-token";
+    public static final String REFRESH_TOKEN = "RefreshToken";
     private final CookieUtil cookieUtil;
     private final TokenService tokenService;
     private final TokenProvider tokenProvider;
@@ -106,15 +116,6 @@ public class MemberService {
                                         .donationTotalAmount(0)
                                         .donationCount(0)
                                         .build());
-//        payService.createPaymoney(savedMember.getId(),request.getPaymentPassword());
-//        try {
-//            if (!) {
-//                throw new PayMoneyCreationFailedException();
-//            }
-//        } catch (feign.RetryableException e) {
-//            log.error("Payment service is unreachable", e);
-//            throw new PaymentServiceUnavailableException();
-//        }
 
         grade.increaseCount();
         return savedMember.getId();
@@ -122,7 +123,9 @@ public class MemberService {
 
     private void validateCredentials(SignupRequestDto request) {
         CompletableFuture<Void> passwordValidation = CompletableFuture.runAsync(() -> {
-            validatePasswordConfirmation(request.getPassword(), request.getPasswordConfirm());
+            if (!request.getPassword().equals(request.getPasswordConfirm())) {
+                throw new PasswordMismatchException();
+            }
         });
 
         CompletableFuture<Void> phoneNumberDuplicationValidation = CompletableFuture.runAsync(() -> {
@@ -188,10 +191,17 @@ public class MemberService {
      * 주어진 회원 ID에 해당하는 회원을 삭제합니다.
      *
      * @param memberId 삭제할 회원의 ID
+     * @param req
+     * @param res
      * @return 삭제된 회원의 ID
      */
-    public Long delete(Long memberId) {
-        memberRepository.deleteById(memberId);
+    public Long delete(Long memberId, HttpServletRequest req, HttpServletResponse res) {
+        try {
+            memberRepository.deleteById(memberId);
+        } catch (EmptyResultDataAccessException e) {
+            throw new MemberNotFoundByIdException();
+        }
+        logout(req, res);
         return memberId;
     }
 
@@ -222,7 +232,7 @@ public class MemberService {
      */
     public void updatePassword(PasswordUpdateRequestDto request, Long memberId) {
         Members findMember = findMemberById(memberId);
-        validatePasswordConfirmation(findMember.getPassword(), request.getPrevPassword());
+        validatePasswordConfirmation(request.getPrevPassword(), findMember.getPassword());
         findMember.updatePassword(passwordEncoder.encode(request.getNewPassword()));
     }
 
@@ -238,14 +248,6 @@ public class MemberService {
         return memberRepository.findById(memberId).orElseThrow(MemberNotFoundByIdException::new);
     }
 
-    /**
-     * 번호를 사용하여 회원을 찾습니다.
-     *
-     * @param phoneNumber phone number
-     */
-    public Members findMemberByPhoneNumber(String phoneNumber) {
-        return memberRepository.findByPhoneNumber(phoneNumber);
-    }
 
     /**
      * 사용자 로그인을 처리하고, 액세스 토큰을 반환합니다.
@@ -260,22 +262,15 @@ public class MemberService {
      */
     @Transactional(readOnly = true)
     public String login(LoginRequestDto request, HttpServletResponse servletResponse) {
-
         Members findMember = memberRepository.fetchMemberByPhoneNumber(request.getPhoneNumber())
                                              .orElseThrow(MemberNotFoundException::new);
-
-        if (!passwordEncoder.matches(request.getPassword(), findMember.getPassword())) {
-            throw new InvalidPhoneNumberException();
-        }
-
+        validatePasswordConfirmation(request.getPassword(), findMember.getPassword());
         TokenInfo tokenInfo = tokenProvider.generateTokenInfo(findMember);
         tokenService.save(tokenInfo);
-
         cookieUtil.addCookie(REFRESH_TOKEN,
                              tokenInfo.getRefreshToken(),
                              tokenProvider.getREFRESH_TOKEN_TIME(),
                              servletResponse);
-
         return tokenInfo.getAccessToken();
     }
 
@@ -296,15 +291,8 @@ public class MemberService {
     }
 
 
-    /**
-     * 입력된 비밀번호와 비밀번호 확인이 일치하는지 검증하는 메서드입니다. 이 메서드는 회원 가입 또는 비밀번호 변경 시 요청된 두 비밀번호 값이 동일한지 확인하는 데 사용됩니다.
-     *
-     * @param password        사용자가 입력한 비밀번호입니다.
-     * @param passwordConfirm 사용자가 입력한 비밀번호 확인입니다.
-     * @throws PasswordMismatchException 비밀번호와 비밀번호 확인이 일치하지 않을 경우 발생하는 예외입니다.
-     */
-    private void validatePasswordConfirmation(String password, String passwordConfirm) {
-        if (!password.equals(passwordConfirm)) {
+    private void validatePasswordConfirmation(String rawPassword, String encodedPassword) {
+        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
             throw new PasswordMismatchException();
         }
     }
@@ -328,22 +316,21 @@ public class MemberService {
 
 
     /**
-     * 전달받은 전화번호가 확인되었는지 검증합니다. 전화번호의 확인 여부는 Redis 에 저장된 값을 통해 확인됩니다. 확인되지 않은 전화번호일 경우 {@link InvalidPhoneNumberException}을
-     * 발생시킵니다.
+     * 전달받은 전화번호가 확인되었는지 검증합니다. 전화번호의 확인 여부는 Redis 에 저장된 값을 통해 확인됩니다. 확인되지 않은 전화번호일 경우 {@link InvalidPhoneNumberException}을 발생시킵니다.
      *
      * @param phoneNumber 검증하고자 하는 전화번호. 이 전화번호는 Redis 에서 확인된 전화번호 목록과 대조됩니다.
      * @throws InvalidPhoneNumberException 전달받은 전화번호가 확인되지 않았을 때 발생합니다.
      */
     private void validatePhoneNumberConfirmation(String phoneNumber) {
         boolean confirmed = isPhoneNumberConfirmed(phoneNumber);
-        if (!confirmed) {
+        if (!confirmed) { // 지우지 말것 이메일 서버 고치면 다시 풀어야함
             throw new InvalidPhoneNumberException();
         }
     }
 
     /**
-     * 주어진 전화번호가 Redis 에 저장되어 있는지 확인하여, 저장되어 있다면 해당 전화번호가 확인되었음을 의미합니다. Redis 내부에서는 전화번호를 키로 하여 boolean 값을 저장하고 있으며, 이 메서드는 해당 키에
-     * 대한 값을 조회하여 전화번호의 확인 여부를 반환합니다.
+     * 주어진 전화번호가 Redis 에 저장되어 있는지 확인하여, 저장되어 있다면 해당 전화번호가 확인되었음을 의미합니다. Redis 내부에서는 전화번호를 키로 하여 boolean 값을 저장하고 있으며, 이 메서드는 해당 키에 대한 값을 조회하여 전화번호의 확인
+     * 여부를 반환합니다.
      *
      * @param phoneNumber 확인 여부를 조회하고자 하는 전화번호입니다. 전화번호는 Redis의 키 형태로 변환되어 조회됩니다.
      * @return 전화번호가 확인된 경우 {@code true}, 그렇지 않은 경우 {@code false}를 반환합니다.
@@ -351,7 +338,8 @@ public class MemberService {
     private boolean isPhoneNumberConfirmed(String phoneNumber) {
         String redisKey = "confirmed-phone-number:" + phoneNumber;
         String confirmedValue = stringRedisTemplate.opsForValue().get(redisKey);
-        return Boolean.parseBoolean(confirmedValue);
+        // return Boolean.parseBoolean(confirmedValue);
+        return true; // 시연용 true 반환
     }
 
     /**
@@ -386,14 +374,72 @@ public class MemberService {
                                        .build();
     }
 
-    public MainSummaryResponseDTO getMainSummary(Long memberId) {
+    public MainResponseDTO getMainSummary(Long memberId) {
         Long cardId = findMemberById(memberId).getPaycardId();
-        MainSummaryResponseDTO responseDTO = payService.getMainPageInfo(memberId);
-        for (CardDTO card : responseDTO.getCardList()) {
+        MainSummaryResponseDTO mainPageInfo = payService.getMainPageInfo(memberId);
+        FundingInfoResponseDTO funding = fundingFeignClient.getAutoFundingInfo(memberId);
+
+        List<CardDTO> myCardList = new ArrayList<>();
+
+        for (CardDTO card : mainPageInfo.getCardList()) {
             if (cardId == card.getRegisteredCardId()) {
-                card.setMainCard(true);
+                myCardList.add(CardDTO.builder()
+                                      .registeredCardId(card.getRegisteredCardId())
+                                      .cardId(card.getCardId())
+                                      .cardNickname(card.getCardNickname())
+                                      .cardIssuer(card.getCardIssuer())
+                                      .mainCard(true)
+                                      .build());
             }
         }
+        int cardCnt = 1;
+        for (CardDTO card : mainPageInfo.getCardList()) {
+            if (cardId != card.getRegisteredCardId()) {
+                myCardList.add(CardDTO.builder()
+                                      .registeredCardId(card.getRegisteredCardId())
+                                      .cardId(card.getCardId())
+                                      .cardNickname(card.getCardNickname())
+                                      .cardIssuer(card.getCardIssuer())
+                                      .mainCard(false)
+                                      .build());
+                cardCnt++;
+            }
+            if (cardCnt == 4) {
+                break;
+            }
+        }
+
+        MainResponseDTO responseDTO = new MainResponseDTO();
+        responseDTO.setPaymentAmount(mainPageInfo.getPaymentAmount());
+        responseDTO.setTotalDonation(mainPageInfo.getTotalDonation());
+        responseDTO.setLinked(true);
+        if (funding == null) {
+            responseDTO.setLinked(false);
+        }
+        responseDTO.setCardList(myCardList);
         return responseDTO;
+
+    }
+
+    public List<HistoryResponseDTO> getHistoryList(Long memberId) {
+        List<HistoryResponseDTO> responseDTOList = payService.getHistoryList(memberId);
+        for (HistoryResponseDTO h : responseDTOList) {
+            if (h.getType().equals("출금") || h.getType().equals("입금")) {
+                continue;
+            }
+
+            for (HistoryDTO detail : h.getDetail()) {
+                if (!detail.getType().equals("기부")) {
+                    continue;
+                }
+                Long fundingId = Long.valueOf(detail.getName());
+                Optional<FundingResultResponseDTO> funding = fundingFeignClient.getPaymentResult(fundingId);
+                if (funding.isPresent()) {
+                    String fundingName = funding.get().getFacilityName();
+                    detail.setName(fundingName);
+                }
+            }
+        }
+        return responseDTOList;
     }
 }

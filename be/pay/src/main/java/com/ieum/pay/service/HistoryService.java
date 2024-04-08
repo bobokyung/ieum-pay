@@ -273,10 +273,13 @@ public class HistoryService {
     public FundingDonationResultResponseDTO getFundingHistory(Long historyId) {
         Histories history = historyRepository.findByHistoryId(historyId);
 
-        if(history==null ||  !history.getHistoryType().equals("기부"))
+        if(history==null ||  history.getHistoryType().equals("출금") || history.getHistoryType().equals("입금"))
             return null;
 
         DonationHistories donationHistory = donationHistoryRepository.findByHistoryId(historyId);
+
+        if(donationHistory==null)
+            return null;
 
         FundingDonationResultResponseDTO dto = FundingDonationResultResponseDTO.builder()
                 .fundingId(donationHistory.getFundingId())

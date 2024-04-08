@@ -1,10 +1,20 @@
 package com.ieum.common.service;
 
+import com.google.gson.Gson;
+import com.ieum.common.domain.Members;
 import com.ieum.common.dto.feign.pay.request.*;
 import com.ieum.common.dto.feign.pay.response.*;
+import com.ieum.common.dto.request.PayRemittancePaymoneyRequestDTO;
 import com.ieum.common.dto.response.CardOcrResponseDTO;
+import com.ieum.common.exception.member.MemberNotFoundByIdException;
+import com.ieum.common.exception.pay.PayCardNotFoundException;
 import com.ieum.common.feign.PayFeignClient;
+import com.ieum.common.format.code.Topic;
+import com.ieum.common.message.TransferReceivedMessage;
+import com.ieum.common.repository.MemberRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,7 +26,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PayService {
 
+    private final Gson gson;
+    private final KafkaTemplate<String, String> kafkaTemplate;
     private final PayFeignClient payFeignClient;
+    private final MemberRepository memberRepository;
 
     public CardOcrResponseDTO getOcr(MultipartFile img) {
         return payFeignClient.getCardOcrResult(img);
@@ -30,11 +43,8 @@ public class PayService {
                                                                       .build());
     }
 
-    public boolean updateCard(Long memberId, Long cardId) {
-        return payFeignClient.deleteCard(CardValidRequestDTO.builder()
-                                                            .memberId(memberId)
-                                                            .registeredCardId(cardId)
-                                                            .build());
+    public Boolean updateCard(Long memberId, Long registeredCardId) {
+        return payFeignClient.deleteCard(registeredCardId, memberId);
     }
 
     public MainSummaryResponseDTO getMainPageInfo(Long memberId) {
@@ -105,20 +115,7 @@ public class PayService {
         return payFeignClient.myPaymoney(memberId);
     }
 
-    public Long remmitancePaymoney(Long member, String memberName, Long receiverId,
-                                   String receiverName, int amount, Long cardId) {
-        return payFeignClient.remittancePaymoney(RemittanceRequestDTO.builder()
-                                                                     .senderId(member)
-                                                                     .senderName(memberName)
-                                                                     .receiverId(receiverId)
-                                                                     .receiverName(receiverName)
-                                                                     .amount(amount)
-                                                                     .cardId(cardId)
-                                                                     .build());
-    }
-
-    public Long remmitanceAccount(Long memberId, String memberName, String receiverName,
-                                  int amount, Long cardId) {
+    public Long remmitanceAccount(Long memberId, String memberName, String receiverName, int amount, Long cardId) {
         return payFeignClient.remittanceAccount(RemittanceAccountRequestDTO.builder()
                                                                            .senderId(memberId)
                                                                            .senderName(memberName)
@@ -143,11 +140,50 @@ public class PayService {
         return payFeignClient.getRemittanceHistory(memberId, historyId);
     }
 
-    public String getCardName(Long registeredCardId) {
+    public Optional<String> getCardName(Long registeredCardId) {
         return payFeignClient.getCardName(registeredCardId);
     }
 
-    public MainSummaryResponseDTO getMainSummary(Long memberId) {
-        return payFeignClient.getMainPageInfo(memberId);
+    public CardDetailResponseDTO getCardDetail(String cardNum) {
+        return payFeignClient.getCardCompany(cardNum);
+    }
+
+    public Long remmitancePaymoney(Long senderId, PayRemittancePaymoneyRequestDTO request) {
+
+        Members sender = memberRepository.findById(senderId).orElseThrow(MemberNotFoundByIdException::new);
+        if (sender.getPaycardId() == null) {
+            throw new PayCardNotFoundException();
+        }
+
+        Members receiver = memberRepository.findByPhoneNumber(request.getPhoneNumber());
+        Long result = payFeignClient.remittancePaymoney(getRemittanceRequestDTO(senderId, request, sender, receiver));
+
+        kafkaTemplate.send(Topic.TRANSFER_RECEIVED.getTopicName(),
+                           gson.toJson(getTransferReceivedMessage(request, receiver, sender, sender.getName())));
+
+        return result;
+    }
+
+
+    private static TransferReceivedMessage getTransferReceivedMessage(PayRemittancePaymoneyRequestDTO request,
+                                                                      Members receiver, Members sender, String senderName) {
+        return TransferReceivedMessage.builder()
+                                      .amount(request.getAmount())
+                                      .receiverId(receiver.getId())
+                                      .senderId(sender.getId())
+                                      .senderName(senderName)
+                                      .build();
+    }
+
+    private static RemittanceRequestDTO getRemittanceRequestDTO(Long senderId, PayRemittancePaymoneyRequestDTO request,
+                                                                Members sender, Members receiver) {
+        return RemittanceRequestDTO.builder()
+                                   .senderId(senderId)
+                                   .senderName(sender.getName())
+                                   .receiverId(receiver.getId())
+                                   .receiverName(receiver.getName())
+                                   .amount(request.getAmount())
+                                   .cardId(sender.getPaycardId())
+                                   .build();
     }
 }

@@ -35,3 +35,4 @@ out/
 
 ### VS Code ###
 .vscode/
+/src/main/resources/ieum-pay-firebase-adminsdk-3eu9j-0fd1a97c8d.json

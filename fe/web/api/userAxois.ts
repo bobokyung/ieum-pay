@@ -1,9 +1,4 @@
-'use-clinet';
-
-import axios, { AxiosRequestConfig } from 'axios';
 import { axiosApi, axiosAuthApi } from '@/utils/instance';
-import useUserStore from '@/stores/user-store';
-import { cookies } from 'next/headers';
 import { setCookie } from '@/utils/cookie';
 
 /**
@@ -22,6 +17,7 @@ export const customlogin = async (phoneNumber: string, password: string) => {
       // cookies().set('access_token', response.data.data);
       setCookie('access_token', response.data.data, 1);
       localStorage['access_token'] = response.data.data;
+      localStorage['phone_number'] = phoneNumber;
       return true;
     })
     .catch((error) => {
@@ -63,6 +59,11 @@ export const getUserInfo = async () => {
     });
 };
 
+/**
+ * 해당 번호로 가입한 적 있는지 판단
+ * @param nunmber 전화번호
+ * @returns response data
+ */
 export const IsRegister = async (nunmber: string) => {
   const local = axiosApi();
 
@@ -86,7 +87,11 @@ interface registerType {
   passwordConfirm: string;
   paymentPassword: string;
 }
-
+/**
+ * 회원가입 함수
+ * @param param0 회원가입에 필요한 정보
+ * @returns boolean value
+ */
 export const register = async ({
   phoneNumber,
   name,
@@ -99,19 +104,84 @@ export const register = async ({
 
   return await local
     .post('api/member', {
-      phoneNumber,
-      name,
-      nickName,
-      password,
-      passwordConfirm,
-      paymentPassword,
+      phoneNumber: phoneNumber,
+      name: name,
+      nickname: nickName,
+      password: password,
+      passwordConfirm: passwordConfirm,
+      paymentPassword: paymentPassword,
     })
     .then((response) => {
       console.log(response);
       return true;
     })
     .catch((error) => {
-      console.log(error.message);
+      console.log(error);
       return false;
     });
 };
+
+/**
+ * 해당 유저의 지난 기부내역 확인
+ * @returns 지난 기부내역 리스트
+ */
+export const participatedList = async () => {
+  const local = axiosAuthApi();
+
+  return await local
+    .get('api/funding/list/participation')
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
+/**
+ *
+ * @returns 카드 정보, 현재잔액, 기부금 총액
+ */
+export const getMainData = async () => {
+  const local = axiosAuthApi();
+
+  return await local
+    .get('api/main/summary')
+    .then((response) => {
+      console.log(response.data);
+      return response.data;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
+export function deleteMember() {
+  // let data = {
+  //   AuthenticationKey: key,
+  // };
+  return axiosAuthApi().delete('/api/member/delete');
+}
+
+export const chagePassword = async (
+  prePassword: string,
+  newPassword: string,
+) => {
+  const local = axiosAuthApi();
+
+  return await local
+    .put('api/member/password', {
+      prevPassword: prePassword,
+      newPassword: newPassword,
+    })
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
+export async function logout() {
+  return axiosAuthApi().post('/api/member/logout');
+}

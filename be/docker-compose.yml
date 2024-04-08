@@ -30,6 +30,16 @@ services:
     environment:
       - TZ=Asia/Seoul
 
+  alert:
+    container_name: alert
+    build: ./alert
+    ports:
+      - "8084:8084"
+    restart: always
+    network_mode: "host"
+    environment:
+      - TZ=Asia/Seoul
+
 networks:
   default:
     driver: bridge

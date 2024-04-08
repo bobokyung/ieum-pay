@@ -1,4 +1,5 @@
 package com.ieum.pay.controller;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ieum.pay.response.CardOcrResponseDTO;
 import org.apache.commons.codec.binary.Base64;
@@ -30,28 +31,28 @@ public class CardOcrController {
     @PostMapping("/ocr")
     public CardOcrResponseDTO extractText(@RequestParam("img") MultipartFile img) throws IOException, ParseException {
         CardOcrResponseDTO nullDTO = CardOcrResponseDTO.builder()
-                .cardNumber("")
-                .validThru("")
-                .build();
+                                                       .cardNumber("")
+                                                       .validThru("")
+                                                       .build();
         RestTemplate restTemplate = new RestTemplate();
         ObjectMapper objectMapper = new ObjectMapper();
 
-        byte[] imageBytes = img.getBytes();
+        byte[] imageBytes =img.getBytes();
 
         // byte 배열을 Base64 문자열로 인코딩
         String base64Image = Base64.encodeBase64String(imageBytes);
         String originalFileExtension = null;
         String contentType = img.getContentType();
 
-
         if (!ObjectUtils.isEmpty(contentType)) {
-            if (contentType.contains("image/jpeg"))
+            if (contentType.contains("image/jpeg")) {
                 originalFileExtension = "jpg";
-            else if (contentType.contains("image/png"))
+            } else if (contentType.contains("image/png")) {
                 originalFileExtension = "png";
+            }
         }
 
-        if(originalFileExtension.isEmpty()){
+        if (originalFileExtension.isEmpty()) {
             return nullDTO;
         }
 
@@ -71,7 +72,6 @@ public class CardOcrController {
 
         requestObject.put("images", req_array);
 
-
         String jsonRequest = objectMapper.writeValueAsString(requestObject);
 
         HttpHeaders headers = new HttpHeaders();
@@ -84,7 +84,7 @@ public class CardOcrController {
 
         JSONParser parser = new JSONParser();
         JSONObject jsonObject = (JSONObject) parser.parse(response.getBody());
-        JSONArray  images = (JSONArray) jsonObject.get("images");
+        JSONArray images = (JSONArray) jsonObject.get("images");
         JSONObject image = (JSONObject) images.get(0);
         String result = (String) image.get("inferResult");
         if ("SUCCESS".equals(result)) {
@@ -94,9 +94,9 @@ public class CardOcrController {
             String number = (String) ((JSONObject) resultValue.get("number")).get("text");
             String validThru = (String) ((JSONObject) resultValue.get("validThru")).get("text");
             return CardOcrResponseDTO.builder()
-                    .cardNumber(number)
-                    .validThru(validThru)
-                    .build();
+                                     .cardNumber(number)
+                                     .validThru(validThru)
+                                     .build();
         }
         return nullDTO;
     }

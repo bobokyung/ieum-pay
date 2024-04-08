@@ -12,6 +12,15 @@ import CreditCardIconActive from './icons/CreditCardIconActive';
 import SendMoneyIconActive from './icons/SendMoneyIconActive';
 import CameraIcon from './icons/CameraIcon';
 import Vibrate from '@/utils/vibrate';
+import Button from './Button';
+import {
+  CircularProgress,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  useDisclosure,
+} from '@nextui-org/react';
 
 //object literal
 export const tabBarElementCode = {
@@ -28,19 +37,24 @@ export type TabBarElementCodeValue =
 
 interface TabBarProps {
   selected: TabBarElementCodeValue;
+  cardLength?: any;
 }
 
-function TabBar({ selected = tabBarElementCode.history }: TabBarProps) {
+function TabBar({
+  selected = tabBarElementCode.history,
+  cardLength,
+}: TabBarProps) {
   function vibrate() {
     Vibrate(10);
   }
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   return (
     <nav className={classes.container}>
       <ul className={classes.ul}>
         <li>
           <Link
-            href="history"
+            href="/history"
             className={classes.link}
             onClick={() => vibrate()}
           >
@@ -58,7 +72,7 @@ function TabBar({ selected = tabBarElementCode.history }: TabBarProps) {
         </li>
         <li>
           <Link
-            href="fundraising"
+            href="/fundraising"
             className={classes.link}
             onClick={() => vibrate()}
           >
@@ -76,23 +90,41 @@ function TabBar({ selected = tabBarElementCode.history }: TabBarProps) {
         </li>
         <li>
           {selected == 'payment' ? (
+            cardLength == 0 ? (
+              <div className={classes.link} onClick={() => onOpen()}>
+                <div
+                  className={`${classes.wrapper} ${selected === tabBarElementCode.payment ? classes.active : ''}`}
+                >
+                  <div className={classes.cameraWrapper}>
+                    <CameraIcon />
+                  </div>
+                  <CreditCardIcon />
+                  결제
+                </div>
+              </div>
+            ) : (
+              <Link
+                href="/payment/qrReader"
+                className={classes.link}
+                onClick={() => vibrate()}
+              >
+                <div
+                  className={`${classes.wrapper} ${selected === tabBarElementCode.payment ? classes.active : ''}`}
+                >
+                  <div className={classes.cameraWrapper}>
+                    <CameraIcon />
+                  </div>
+                  <CreditCardIcon />
+                  결제
+                </div>
+              </Link>
+            )
+          ) : (
             <Link
-              href="/payment/qrReader"
+              href="/main"
               className={classes.link}
               onClick={() => vibrate()}
             >
-              <div
-                className={`${classes.wrapper} ${selected === tabBarElementCode.payment ? classes.active : ''}`}
-              >
-                <div className={classes.cameraWrapper}>
-                  <CameraIcon />
-                </div>
-                <CreditCardIcon />
-                결제
-              </div>
-            </Link>
-          ) : (
-            <Link href="/" className={classes.link} onClick={() => vibrate()}>
               <div className={`${classes.wrapper}`}>
                 <CreditCardIcon />
                 결제
@@ -102,7 +134,7 @@ function TabBar({ selected = tabBarElementCode.history }: TabBarProps) {
         </li>
         <li>
           <Link
-            href="send-money"
+            href="/send-money"
             className={classes.link}
             onClick={() => vibrate()}
           >
@@ -120,7 +152,7 @@ function TabBar({ selected = tabBarElementCode.history }: TabBarProps) {
         </li>
         <li>
           <Link
-            href="my-page"
+            href="/my-page"
             className={classes.link}
             onClick={() => vibrate()}
           >
@@ -137,6 +169,34 @@ function TabBar({ selected = tabBarElementCode.history }: TabBarProps) {
           </Link>
         </li>
       </ul>
+      <Modal
+        className={classes.modalComp}
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalBody className={classes.modalContainer}>
+                <div>
+                  <p>결제하시려면 카드를 등록해주세요.</p>
+                </div>
+              </ModalBody>
+              <ModalFooter className={classes.modalFooter}>
+                <Button
+                  primary
+                  size="thin"
+                  onClick={() => {
+                    onClose();
+                  }}
+                >
+                  확인
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </nav>
   );
 }

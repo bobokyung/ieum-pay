@@ -1,15 +1,15 @@
 .video {
   position: absolute;
-  width: 100vw;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   object-fit: cover;
   background-color: black;
 }
 .overlay {
   position: absolute;
   color: var(--white);
-  width: 100vw;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -17,19 +17,14 @@
   padding: 2.438rem 1.25rem 1rem 1.25rem;
 
   header {
-    position: static;
+    display: flex;
+    justify-content: space-between;
     h1 {
-      position: static;
       font-size: 1.25rem;
       font-weight: bold;
       letter-spacing: -1.6px;
       text-align: center;
       color: var(--real-white);
-      div {
-        position: absolute;
-        display: inline-block;
-        right: 1.25rem;
-      }
     }
   }
 }
@@ -42,13 +37,13 @@ $cardHeight: 12.667rem;
   height: $cardHeight;
   box-sizing: content-box;
   flex-shrink: 0;
-  border-left-width: calc((100vw - $cardWidth) / 2);
+  border-left-width: calc((100dvw - $cardWidth) / 2);
   border-left-color: rgba(0, 0, 0, 0.6);
-  border-right-width: calc((100vw - $cardWidth) / 2);
+  border-right-width: calc((100dvw - $cardWidth) / 2);
   border-right-color: rgba(0, 0, 0, 0.6);
-  border-top-width: calc((100vh - $cardHeight) / 2);
+  border-top-width: calc((100dvh - $cardHeight) / 2);
   border-top-color: rgba(0, 0, 0, 0.6);
-  border-bottom-width: calc((100vh - $cardHeight) / 2);
+  border-bottom-width: calc((100dvh - $cardHeight) / 2);
   border-bottom-color: rgba(0, 0, 0, 0.6);
   &:after {
     content: url('/card-frame.svg');
@@ -62,5 +57,50 @@ $cardHeight: 12.667rem;
     letter-spacing: -1.28px;
     text-align: center;
     color: var(--real-white);
+  }
+  .link-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    bottom: -5rem;
+    z-index: 10;
+    .link {
+      border-radius: 23px;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      border: solid 1px var(--real-white);
+      font-size: 1.25rem;
+      font-weight: 500;
+      letter-spacing: -1.6px;
+      text-align: center;
+      color: var(--real-white);
+      padding: 0.25rem 1rem;
+    }
+  }
+}
+
+.modalComp {
+  position: absolute;
+  text-align: center;
+  width: 90%;
+  height: 30%;
+  top: 30%;
+  .modalContainer {
+    align-items: center;
+    justify-content: center;
+    p {
+      font-size: 1.2rem;
+    }
+  }
+  .fixed {
+    z-index: 1020;
+  }
+  .modalFooter {
+    width: 100%;
   }
 }

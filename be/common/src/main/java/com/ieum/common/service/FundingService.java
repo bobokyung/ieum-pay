@@ -22,7 +22,6 @@ import com.ieum.common.exception.pay.DonationHistoryNotFoundException;
 import com.ieum.common.feign.FundingFeignClient;
 import com.ieum.common.feign.PayFeignClient;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -82,12 +81,13 @@ public class FundingService {
     }
 
     // 직접 기부
-    public DirectlyDonationResponseDTO donationDirectly(DirectlyDonationRequestDTO request, Long memberId) {
+    public DirectlyDonationResponseDTO donationDirectly(DirectlyDonationRequestDTO request, Long memberId, String nickname) {
         // 기부
         FundingDonationRequestDTO funding = FundingDonationRequestDTO.builder()
                                                                      .fundingId(request.getFundingId())
                                                                      .amount(request.getAmount())
                                                                      .memberId(memberId)
+            .nickname(nickname)
                                                                      .build();
 
         if (!fundingFeignClient.donationDirectly(funding).getFundingResult()) {
@@ -116,7 +116,10 @@ public class FundingService {
     // 영수증
     public ReceiptResponseDTO getReceiptInfo(Long historyId, Long memberId) {
         var history = fetchDonationHistoryById(historyId);
+        log.info("reciept");
+
         var funding = fundingFeignClient.getReceipt(history.getFundingId());
+        log.info("recieptt");
         Members member = memberService.findMemberById(memberId);
         return ReceiptResponseDTO.builder()
                                  .fundingId(history.getFundingId())
@@ -137,31 +140,15 @@ public class FundingService {
         return fundingFeignClient.getFundingParticipationList(memberId);
     }
 
-    public CompletableFuture<DonationDirectlyResponseDTO> getDirectlyResult(Long historyId) {
-        var historyFuture =
-            CompletableFuture.supplyAsync(() -> fetchDonationHistoryById(historyId));
-        var fundingFuture =
-            CompletableFuture.supplyAsync(() -> fetchFundingResultByHistory(historyId));
-        return historyFuture
-            .thenCombine(fundingFuture, FundingService::buildDonationDirectlyResponseDTO)
-            .handle((result, throwable) -> {
-                if (throwable != null) {
-                    Throwable cause = throwable.getCause();
-                    if (cause instanceof FundingResultNotFoundException) {
-                        throw (FundingResultNotFoundException) cause;
-                    } else if (cause instanceof DonationHistoryNotFoundException) {
-                        throw (DonationHistoryNotFoundException) cause;
-                    } else {
-                        throw new RuntimeException("Unexpected exception occurred", cause);
-                    }
-                }
-                return result;
-            });
+    public DonationDirectlyResponseDTO getDirectDonationResultByHistoryId(Long historyId) {
+        var donationResultResponse = fetchDonationHistoryById(historyId);
+        var fundingResultResponse = fetchFundingResultByHistory(donationResultResponse.getFundingId());
+        return buildDonationDirectlyResponseDTO(donationResultResponse, fundingResultResponse);
     }
 
 
-    private FundingResultResponseDTO fetchFundingResultByHistory(Long historyId) {
-        return fundingFeignClient.getPaymentResult(historyId)
+    private FundingResultResponseDTO fetchFundingResultByHistory(Long fundingId) {
+        return fundingFeignClient.getPaymentResult(fundingId)
                                  .orElseThrow(FundingResultNotFoundException::new);
     }
 

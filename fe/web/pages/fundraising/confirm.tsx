@@ -5,25 +5,18 @@ import Button from '@/stories/Button';
 import { commaizeNumber } from '@toss/utils';
 import DirectDonationIcon from '@/components/icons/DirectDonationIcon';
 import { useRouter } from 'next/router';
-import useUserStore from '@/stores/user-store';
-import { directDonate } from '@/api/fundAxois';
 
 function ConfirmPage() {
-  const { donateMoneyInfo, setFundingId } = useDonateMoneyInfo();
-  const { userInfo } = useUserStore();
+  const { donateMoneyInfo } = useDonateMoneyInfo();
   const router = useRouter();
-  const onClickFunc = async () => {
-    const fundingId = await directDonate(
-      donateMoneyInfo.기관아이디,
-      donateMoneyInfo.송금금액,
-      donateMoneyInfo.남은금액,
-    );
-    if (fundingId != 0) {
-      setFundingId(fundingId);
-      router.push('/fundraising/complete');
-    } else {
-      console.log('실패ㅐㅐㅐㅐㅐ');
-    }
+  const onClickFunc = () => {
+    router.push({
+      pathname: '/password',
+      query: {
+        id: 0,
+        pushUrl: 'fundraising-complete',
+      },
+    });
   };
   return (
     <>
@@ -40,9 +33,11 @@ function ConfirmPage() {
             {commaizeNumber(donateMoneyInfo.송금금액)}원 기부하기
           </p>
         </div>
-        <Button primary size="thick" onClick={onClickFunc}>
-          기부하기
-        </Button>
+        <div className={styles.btn}>
+          <Button primary size="thick" onClick={onClickFunc}>
+            기부하기
+          </Button>
+        </div>
       </main>
     </>
   );

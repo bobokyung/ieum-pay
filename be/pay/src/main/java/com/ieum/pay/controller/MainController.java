@@ -5,7 +5,7 @@ import com.ieum.pay.domain.RegisteredCards;
 import com.ieum.pay.dto.CardDTO;
 import com.ieum.pay.response.MainSummaryResponseDTO;
 import com.ieum.pay.service.PaymoneyService;
-import com.ieum.pay.service.RegisteredCardService;
+import com.ieum.pay.service.CardRegistrationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,11 +19,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MainController {
     private final PaymoneyService paymoneyService;
-    private final RegisteredCardService registeredCardService;
+    private final CardRegistrationService cardRegistrationService;
     @GetMapping("{memberId}")
     public MainSummaryResponseDTO getMainSummary(@PathVariable Long memberId){
         Paymoney paymoney = paymoneyService.getPaymoney(memberId);
-        List<RegisteredCards> cardsList = registeredCardService.getCardList(memberId);
+        List<RegisteredCards> cardsList = cardRegistrationService.getCardList(memberId);
         MainSummaryResponseDTO result = new MainSummaryResponseDTO(paymoney.getPaymoneyAmount(), paymoney.getDonationTotalAmount());
 
         for(RegisteredCards c : cardsList){

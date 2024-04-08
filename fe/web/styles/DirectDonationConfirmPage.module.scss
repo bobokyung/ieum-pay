@@ -3,9 +3,10 @@
   flex-direction: column;
   padding: 1.25rem;
   align-items: center;
+  justify-content: center;
 }
 .icon {
-  margin: 6.5rem auto 3.6875rem auto;
+  margin: 50% auto 3.6875rem auto;
 }
 
 .msg {
@@ -18,4 +19,10 @@
 .name {
   color: var(--primary-color);
   font-weight: 600;
+}
+
+.btn {
+  position: absolute;
+  width: 90%;
+  bottom: 2%;
 }

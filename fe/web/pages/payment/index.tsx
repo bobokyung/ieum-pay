@@ -7,6 +7,7 @@ import { getPaymentInfo } from '@/api/paymentAxios';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { GetServerSideProps } from 'next';
+import usePaymentInfo from '@/hooks/usePayStore';
 
 function Payment({ storeId, Qprice }: { storeId: string; Qprice: string }) {
   const [info, setInfo] = useState({
@@ -17,7 +18,9 @@ function Payment({ storeId, Qprice }: { storeId: string; Qprice: string }) {
     paymoneyAmount: 0,
     chargeAmount: 0,
     donationMoney: 0,
+    authenticationKey: '',
   });
+  const { paymentInfo, setPaymentInfo } = usePaymentInfo();
 
   console.log('payment :', storeId, Qprice);
 
@@ -36,10 +39,12 @@ function Payment({ storeId, Qprice }: { storeId: string; Qprice: string }) {
   const router = useRouter();
 
   const handleClick = () => {
+    setPaymentInfo(info);
     router.push({
       pathname: '/password',
       query: {
         id: 0,
+        pushUrl: 'payment',
       },
     });
   };

@@ -27,6 +27,13 @@ export default function register() {
           description2={'회원가입을 진행하시겠습니까?'}
         />
       </div>
+      <div className={styles.imgBox}>
+        <img
+          className={styles.img}
+          src="/icon-192x192.png"
+          alt="이음페이 로고"
+        />
+      </div>
       <div className={styles.btnTag}>
         <Button primary size="thick" onClick={startRegister}>
           시작하기

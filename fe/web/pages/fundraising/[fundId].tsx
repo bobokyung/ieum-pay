@@ -18,6 +18,8 @@ import useUserStore from '@/stores/user-store';
 import Button from '@/stories/Button';
 import { Progress } from '@nextui-org/react';
 import { josa } from '@toss/hangul';
+import { GetServerSideProps } from 'next/types';
+import { getBalance } from '@/api/paymentAxios';
 
 interface peopleType {
   nickname: string;
@@ -57,12 +59,12 @@ interface dataType {
   fundingFinishDate: string | null;
 }
 
-export default function Detail() {
+export default function Detail({ fundId }: { fundId: string }) {
   const router = useRouter();
   const donateInfo = useDonateMoneyInfo();
-  const { userInfo } = useUserStore();
+  const { userInfo, setBalance } = useUserStore();
 
-  const [data, setData] = useState<dataType>({
+  const [detailData, setData] = useState<dataType>({
     fundingId: 1,
     facilityName: '은혜노인복지센터',
     facilityAddress: '부산광역시 해운대구 우동 123-45',
@@ -78,7 +80,7 @@ export default function Detail() {
     fundingTitle: '은혜노인복지센터 식사 지원',
     goalAmount: 817600,
     currentAmount: 400800,
-    currentLink: true,
+    currentLink: false,
     people: [
       {
         nickname: 'nick1',
@@ -169,7 +171,7 @@ export default function Detail() {
         <hr className={styles.hr} />
         <div className={styles.info}>
           <div className={styles.cardContainer}>
-            {data.products.map((unit) => (
+            {detailData.products.map((unit) => (
               <>
                 <div className={styles.card}>
                   <div className={styles.imageBox}>
@@ -204,7 +206,7 @@ export default function Detail() {
       <div className={styles.fundingState}>
         <div className={styles.title}>기부자 목록</div>
         <div>
-          {data.people.map((unit) => (
+          {detailData.people.map((unit) => (
             <div className={styles.donatorContainer}>
               <div className={styles.donatorInfo}>
                 <img
@@ -226,9 +228,9 @@ export default function Detail() {
 
   const setdirectDonateInfo = () => {
     donateInfo.setDonateMoneyInfo({
-      기관아이디: data.fundingId,
-      기관명: data.facilityName,
-      남은금액: data.goalAmount - data.currentAmount,
+      기관아이디: detailData.fundingId,
+      기관명: detailData.facilityName,
+      남은금액: detailData.goalAmount - detailData.currentAmount,
       송금금액: 0,
       송금은행: '이음페이',
       잔액: userInfo.balance,
@@ -237,28 +239,28 @@ export default function Detail() {
   };
 
   const mamgeLinking = async () => {
-    if (await setConnectState(data.currentLink, data.fundingId)) {
+    if (await setConnectState(detailData.currentLink, detailData.fundingId)) {
       setData({
-        fundingId: data.fundingId,
-        facilityName: data.facilityName,
-        facilityAddress: data.facilityAddress,
-        facilityPhoneNumber: data.facilityPhoneNumber,
-        facilityRepresentativeName: data.facilityRepresentativeName,
+        fundingId: detailData.fundingId,
+        facilityName: detailData.facilityName,
+        facilityAddress: detailData.facilityAddress,
+        facilityPhoneNumber: detailData.facilityPhoneNumber,
+        facilityRepresentativeName: detailData.facilityRepresentativeName,
         facilityRepresentativePhoneNumber:
-          data.facilityRepresentativePhoneNumber,
-        facilityCapacity: data.facilityCapacity,
-        facilityImage: data.facilityImage,
-        fundingOpenDate: data.fundingOpenDate,
-        fundingPeopleCnt: data.fundingPeopleCnt,
-        fundingTitle: data.fundingTitle,
-        goalAmount: data.goalAmount,
-        currentAmount: data.currentAmount,
+          detailData.facilityRepresentativePhoneNumber,
+        facilityCapacity: detailData.facilityCapacity,
+        facilityImage: detailData.facilityImage,
+        fundingOpenDate: detailData.fundingOpenDate,
+        fundingPeopleCnt: detailData.fundingPeopleCnt,
+        fundingTitle: detailData.fundingTitle,
+        goalAmount: detailData.goalAmount,
+        currentAmount: detailData.currentAmount,
         // 여기 바꾸는거
-        currentLink: !data.currentLink,
-        people: data.people,
-        content: data.content,
-        products: data.products,
-        fundingFinishDate: data.fundingFinishDate,
+        currentLink: !detailData.currentLink,
+        people: detailData.people,
+        content: detailData.content,
+        products: detailData.products,
+        fundingFinishDate: detailData.fundingFinishDate,
       });
       onOpen();
     }
@@ -267,7 +269,7 @@ export default function Detail() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const btnProps = {
-    text: data.currentLink ? '기부 그만하기' : '기부 연동하기',
+    text: detailData.currentLink ? '기부 그만하기' : '기부 연동하기',
     text2: '직접 후원하기',
     btnStyle: 'recThinFill',
     btnStyle2: 'recThinFill',
@@ -278,8 +280,10 @@ export default function Detail() {
   useEffect(() => {
     async function getData() {
       try {
-        const fundDetailData = await getFundDetail(router.query['fundId']);
+        const fundDetailData = await getFundDetail(fundId);
+        const userBalance = await getBalance();
         fundDetailData != undefined ? setData(fundDetailData.data) : '';
+        setBalance(userBalance);
       } catch (e) {
         console.log(e);
       }
@@ -293,19 +297,24 @@ export default function Detail() {
       <div className={styles.detailContainer}>
         <div className={styles.imageTag}>
           <img
-            src={data.facilityImage}
+            src={detailData.facilityImage}
             className={styles.facilityImage}
             alt="기관 이미지"
           />
         </div>
         <div className={styles.fundingState}>
-          <div className={styles.title}>모금 현황</div>
+          <div className={styles.title}>{detailData.facilityName}</div>
           <div className={styles.info}>
             <div>
-              마감까지 {commaizeNumber(data.goalAmount - data.currentAmount)}
+              마감까지{' '}
+              {commaizeNumber(detailData.goalAmount - detailData.currentAmount)}
             </div>
             <div>
-              {((data.currentAmount / data.goalAmount) * 100).toFixed(2)}%
+              {(
+                (detailData.currentAmount / detailData.goalAmount) *
+                100
+              ).toFixed(2)}
+              %
             </div>
           </div>
           <Progress
@@ -314,17 +323,19 @@ export default function Detail() {
             classNames={{
               indicator: `${styles.progressBar}`,
             }}
-            value={Math.floor((data.currentAmount / data.goalAmount) * 100)}
+            value={Math.floor(
+              (detailData.currentAmount / detailData.goalAmount) * 100,
+            )}
           />
         </div>
         {productList()}
         {donatorList()}
         <div className={styles.content}>
           <p>기관으로부터의 편지</p>
-          {data.content}
+          {detailData.content}
         </div>
       </div>
-      {data.fundingFinishDate == null ? (
+      {detailData.fundingFinishDate == null ? (
         <div className={styles.footer}>{HalfButton(btnProps)}</div>
       ) : (
         <div></div>
@@ -340,7 +351,7 @@ export default function Detail() {
             <>
               <ModalBody>
                 <div className={styles.modalContainer}>
-                  {data.currentLink ? (
+                  {detailData.currentLink ? (
                     <>
                       <img
                         className={styles.modalImage}
@@ -348,7 +359,7 @@ export default function Detail() {
                         alt="이어졌다는 뜻의 이미지"
                       />
                       <div className={styles.modalMessage}>
-                        {josa(data.facilityName, '와/과')} 이어졌어요!
+                        {josa(detailData.facilityName, '와/과')} 이어졌어요!
                       </div>
                     </>
                   ) : (
@@ -359,14 +370,15 @@ export default function Detail() {
                         alt="끊어졌다는 뜻의 로고 이미지"
                       />
                       <div className={styles.modalMessage}>
-                        {josa(data.facilityName, '와/과')}의 연결을 끊었어요
+                        {josa(detailData.facilityName, '와/과')}의 연결을
+                        끊었어요
                       </div>
                     </>
                   )}
                 </div>
               </ModalBody>
               <ModalFooter className={styles.modalFooter}>
-                <Button primary size="thick" onClick={onClose}>
+                <Button primary size="thin" onClick={onClose}>
                   확인
                 </Button>
               </ModalFooter>
@@ -377,3 +389,13 @@ export default function Detail() {
     </>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { fundId } = context.query;
+
+  return {
+    props: {
+      fundId: fundId,
+    },
+  };
+};

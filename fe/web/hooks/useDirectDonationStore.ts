@@ -49,7 +49,7 @@ const useDonateMoneyInfo = create<
         기관명: state.donateMoneyInfo.기관명,
         남은금액: state.donateMoneyInfo.남은금액,
         송금금액: Math.min(
-          MAX_TRANSFER,
+          state.donateMoneyInfo.남은금액,
           state.donateMoneyInfo.송금금액 * 10 + amount,
         ),
         송금은행: state.donateMoneyInfo.송금은행,
@@ -81,7 +81,7 @@ const useDonateMoneyInfo = create<
         남은금액: state.donateMoneyInfo.남은금액,
         송금금액: Math.min(
           state.donateMoneyInfo.송금금액 + amount,
-          MAX_TRANSFER,
+          state.donateMoneyInfo.남은금액,
         ),
         송금은행: state.donateMoneyInfo.송금은행,
         잔액: state.donateMoneyInfo.잔액,

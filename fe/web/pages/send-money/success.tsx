@@ -16,23 +16,27 @@ function SuccessPage() {
   }
   return (
     <>
-      <Header>이음페이 송금하기</Header>
-      <main>
-        <img src="/SuccessIcon.svg" alt="보라색 체크표시 아이콘"></img>
-        <div className={classes.msg}>
-          <p>
-            <strong className={classes.name}>{sendMoneyInfo.수취인}</strong>
-            님에게
-            <br />
-            {commaizeNumber(sendMoneyInfo.송금금액)}원을
-            <br />
-            보냈어요
-          </p>
+      <div className={classes.container}>
+        <Header>이음페이 송금하기</Header>
+        <main>
+          <img src="/SuccessIcon.svg" alt="보라색 체크표시 아이콘"></img>
+          <div className={classes.msg}>
+            <p>
+              <strong className={classes.name}>{sendMoneyInfo.수취인}</strong>
+              님에게
+              <br />
+              {commaizeNumber(sendMoneyInfo.송금금액)}원을
+              <br />
+              보냈어요
+            </p>
+          </div>
+        </main>
+        <div className={classes['btn-wrapper']}>
           <Button primary size="thick" onClick={handleClick}>
             완료
           </Button>
         </div>
-      </main>
+      </div>
     </>
   );
 }

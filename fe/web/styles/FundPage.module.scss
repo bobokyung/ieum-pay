@@ -1,5 +1,8 @@
 .tabContainer {
   width: 100%;
+  position: sticky;
+  z-index: 100;
+  top: 3.56rem;
 }
 .ul {
   display: flex;
@@ -28,7 +31,8 @@
   flex-direction: column;
   padding: 0.625rem;
   background-color: var(--forthary);
-  height: 100vh;
+  min-height: 100dvh;
+  height: 100%;
   padding-bottom: 3rem;
 }
 .card {

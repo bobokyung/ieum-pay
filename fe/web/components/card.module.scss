@@ -1,0 +1,139 @@
+$cardPosition: 0;
+// $cardOffset: 2.6rem;
+$cardWidth: 20rem;
+
+.card {
+  width: $cardWidth;
+  height: $cardWidth / 1.58;
+  background-color: #fff;
+  // box-shadow: 1px 2px 2px 0px rgba(0, 0, 0, 0.4);
+  border-radius: 0.6rem;
+  position: absolute;
+  transform-origin: 50% 0%;
+  transition: all 0.8s ease;
+  background-color: #b7b7b7;
+  padding: 0.75rem 0.75rem;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  height: 100%;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+}
+
+.logo {
+  width: 5.4rem;
+  // height: 1.2rem;
+}
+
+.bottom {
+  display: flex;
+  justify-content: end;
+  padding-bottom: 0.2rem;
+}
+
+// .mainMarkBox {
+//   display: flex;
+//   justify-content: end;
+// }
+.mainMark {
+  border: none;
+  border-radius: 1rem;
+  border: 1px solid var(--primary-color);
+  background-color: var(--real-white);
+  color: var(--primary-color);
+  padding: 0.2rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  // margin-top: 0.3rem;
+  width: 5rem;
+  position: absolute;
+  top: -0.2rem;
+  right: 0;
+}
+
+.nicknameContainer {
+  border: none;
+  border-radius: 1rem;
+  background-color: rgb(52, 52, 52);
+  color: var(--real-white);
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+
+.card0 {
+  z-index: 1000;
+  left: $cardPosition;
+  animation-name: down;
+  animation-duration: 1.5s;
+}
+
+.card1 {
+  z-index: 800;
+  transform: scale(0.9);
+  filter: brightness(0.95);
+  top: $cardPosition - 1.4rem;
+}
+
+.card2 {
+  z-index: 600;
+  transform: scale(0.8);
+  filter: brightness(0.9);
+  top: $cardPosition - 2.7rem;
+}
+
+.card3 {
+  z-index: 400;
+  transform: scale(0.7);
+  filter: brightness(0.85);
+  top: $cardPosition - 3.9rem;
+  animation-name: remove;
+  animation-duration: 0.7s;
+}
+
+@keyframes remove {
+  0% {
+    transform: translateY(0px) scale(0.7);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(10px) scale(0.7);
+    opacity: 0;
+  }
+  // 51% {
+  //   transform: translateY(10px) scale(0.7);
+  //   opacity: 0;
+  // }
+  100% {
+    transform: translateY(0px) scale(0.7);
+    opacity: 1;
+  }
+}
+
+@keyframes down {
+  0% {
+    transform: translateY(-1.4rem) scale(0.9);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(0px) scale(1);
+    opacity: 1;
+  }
+  // 51% {
+  //   transform: translateY(0px) scale(1);
+  //   opacity: 1;
+  // }
+  100% {
+    transform: translateY(0px) scale(1);
+    opacity: 1;
+  }
+}

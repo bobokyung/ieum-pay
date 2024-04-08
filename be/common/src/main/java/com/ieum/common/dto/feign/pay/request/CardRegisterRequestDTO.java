@@ -7,8 +7,9 @@ import lombok.Data;
 @Data
 @Builder
 public class CardRegisterRequestDTO {
-    Long memberId;
-    String cardNumber;
-    String cardNickname;
+
+    private Long memberId;
+    private String cardNumber;
+    private String cardNickname;
 }
 

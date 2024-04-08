@@ -63,6 +63,7 @@ export default function User() {
           classNames={{ label: styles.labelTag }}
           required
           maxLength={11}
+          autoFocus
         />
         <div className={styles.box}></div>
         <div className={chngeBtn ? styles.startBtnTag : styles.btnTagnone}>

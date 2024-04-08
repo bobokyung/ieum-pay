@@ -5,10 +5,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import org.springframework.data.repository.query.Param;
 
 public interface CardRepository extends JpaRepository<Cards, Long> {
 
     @Query("SELECT c FROM Cards c " +
-            " WHERE c.cardBin = :number1 or c.cardBin = :number2 order by c.cardBin asc ")
-    List<Cards> findByCardNumber(int number1, int number2);
+        "WHERE c.cardBin IN :numbers " +
+        "ORDER BY c.cardBin ASC")
+    List<Cards> findByCardNumbers(@Param("numbers") List<Integer> numbers);
 }

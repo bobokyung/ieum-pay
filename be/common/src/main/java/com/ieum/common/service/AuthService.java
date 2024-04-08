@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-    
+
     private final PayFeignClient payFeignClient;
     private final PasswordEncoder passwordEncoder;
     private final StringRedisTemplate stringRedisTemplate;
@@ -32,18 +32,18 @@ public class AuthService {
             String authKey = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
 
             stringRedisTemplate.opsForValue().set("2ndAuth:" + req.getMemberId(),
-                authKey, 3, TimeUnit.MINUTES);
+                                                  authKey, 3, TimeUnit.MINUTES);
 
             return secondaryAuthResponseDTO.builder()
-                .auth(true)
-                .authenticationKey(authKey)
-                .build();
+                                           .auth(true)
+                                           .authenticationKey(authKey)
+                                           .build();
         }
         return secondaryAuthResponseDTO.builder()
-            .auth(false)
-            .build();
+                                       .auth(false)
+                                       .build();
     }
-    
+
     // 2차 비밀번호 확인 인증 - 레디스에 키가 있는지
     public boolean checkAuthInRedis(Long memberId, String authKey) {
         String getAuthKeyFromRedis = stringRedisTemplate.opsForValue().get("2ndAuth:" + memberId);

@@ -6,18 +6,30 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { confirmPassword } from '@/api/paymentAxios';
+import { directDonate } from '@/api/fundAxois';
+import { payment } from '@/api/paymentAxios';
+import { sendPayMoney } from '@/api/sendMoneyAxios';
+import useDonateMoneyInfo from '@/hooks/useDirectDonationStore';
+import usePaymentInfo from '@/hooks/usePayStore';
+import useSendMoneyInfo from '@/hooks/useSendMoneyStore';
+import {
+  Modal,
+  ModalContent,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+} from '@nextui-org/react';
+import Button from '@/stories/Button';
 
-// interface PasswordPage {
-//   title: string;
-//   description: string;
-//   queryObj: Object;
-// }
-
-function PasswordPage({ id }: { id: string }) {
-  // const [message, setMessage] = useState('');
+function PasswordPage({ id, pushUrl }: { id: string; pushUrl?: string }) {
   const [password, setPassword] = useState<number[]>([]);
-  const { userInfo, setPaymentPassword } = useUserStore();
   const [isTrue, setIsTrue] = useState(true);
+  const { userInfo, setPaymentPassword } = useUserStore();
+  const { donateMoneyInfo, setFundingId } = useDonateMoneyInfo();
+  const { paymentInfo } = usePaymentInfo();
+  const { sendMoneyInfo } = useSendMoneyInfo();
+  const [cnt, setCnt] = useState(0);
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const pageId = [
     ['결제 비밀번호 입력', ''],
@@ -25,6 +37,41 @@ function PasswordPage({ id }: { id: string }) {
     ['결제 비밀번호 확인', '결제 비밀번호를 한번 더 입력해주세요'],
   ];
   const router = useRouter();
+
+  const payLogic = async (key: string) => {
+    if (pushUrl != undefined) {
+      if (pushUrl == 'fundraising-complete') {
+        const fundingId = await directDonate(
+          donateMoneyInfo.기관아이디,
+          donateMoneyInfo.송금금액,
+          donateMoneyInfo.남은금액,
+          key,
+        );
+        if (fundingId != 0) {
+          console.log(fundingId.historyId);
+          setFundingId(fundingId.historyId);
+          router.push('/fundraising/complete');
+        }
+      } else if (pushUrl == 'payment') {
+        const paymentRes = await payment(paymentInfo, key);
+        if (paymentRes != undefined) {
+          router.push({
+            pathname: '/payment/PaymentComplete',
+            query: {
+              historyId: paymentRes.data.historyId,
+            },
+          });
+        }
+      } else if (pushUrl === 'send-money') {
+        const phoneNumber = sendMoneyInfo.수취계좌;
+        const amount = sendMoneyInfo.송금금액;
+        try {
+          const sendMoneyRes = await sendPayMoney(phoneNumber, amount, key);
+          router.push('/send-money/success');
+        } catch (e) {}
+      }
+    }
+  };
 
   useEffect(() => {
     const checkPassword = async () => {
@@ -44,7 +91,17 @@ function PasswordPage({ id }: { id: string }) {
             : (setIsTrue(false), setPassword([]));
         } else if (id == '0') {
           const check = await confirmPassword(password.join(''));
-          const key = check.data.authenticationKey;
+          setCnt(cnt + 1);
+          if (check.status == 'SUCCESS') {
+            const key = check.data.authenticationKey;
+            payLogic(key);
+          } else {
+            setIsTrue(false);
+            setPassword([]);
+            if (cnt == 4) {
+              onOpen();
+            }
+          }
         }
       }
     };
@@ -52,32 +109,68 @@ function PasswordPage({ id }: { id: string }) {
   }, [password]);
 
   return (
-    <main className={classes.main}>
-      <PageTitleCenter
-        title={pageId[parseInt(id)][0]}
-        description={pageId[parseInt(id)][1]}
-      />
-      <ul className={classes.wrapper}>
-        {Array.from({ length: 6 }).map((v, i) => (
-          <li>
-            <div
-              className={`${classes.circle} ${i < password.length ? classes.active : ''}`}
-            ></div>
-          </li>
-        ))}
-      </ul>
-      {isTrue ? <div></div> : <div>다시 입력해 주세요</div>}
-      <PasswordKeyPad
-        onClickNumber={(n) => setPassword((prev) => [...prev, n].slice(0, 6))}
-        onClickDelete={() => setPassword((prev) => prev.slice(0, -1))}
-      />
-    </main>
+    <>
+      <main className={classes.main}>
+        <PageTitleCenter
+          title={pageId[parseInt(id)][0]}
+          description={pageId[parseInt(id)][1]}
+        />
+        <div className={classes.container}>
+          <ul className={classes.wrapper}>
+            {Array.from({ length: 6 }).map((v, i) => (
+              <li>
+                <div
+                  className={`${classes.circle} ${i < password.length ? classes.active : ''}`}
+                ></div>
+              </li>
+            ))}
+          </ul>
+          {isTrue ? <div></div> : <div>다시 입력해 주세요 {cnt} / 5</div>}
+        </div>
+        <PasswordKeyPad
+          onClickNumber={(n) => setPassword((prev) => [...prev, n].slice(0, 6))}
+          onClickDelete={() => setPassword((prev) => prev.slice(0, -1))}
+        />
+      </main>
+      <Modal
+        className={classes.modalComp}
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalBody className={classes.modalContainer}>
+                <div className={classes.text}>
+                  <p>결제에 실패했습니다</p>
+                </div>
+              </ModalBody>
+              <ModalFooter className={classes.modalFooter}>
+                <Button
+                  primary
+                  size="thin"
+                  onClick={() => {
+                    router.push('/main');
+                    onClose();
+                  }}
+                >
+                  확인
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </>
   );
 }
 export default PasswordPage;
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   // query 객체 사용
   return {
-    props: { id: query.id },
+    props: {
+      id: query.id,
+      pushUrl: query.pushUrl != undefined ? query.pushUrl : '',
+    },
   };
 };

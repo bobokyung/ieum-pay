@@ -4,11 +4,11 @@ import com.ieum.common.dto.FundingMemberDTO;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-import org.bson.Document;
 
 @Getter
 @Builder
 public class FundingCompleteDetailResponseDTO {
+
     String facilityName;
     String facilityAddress;
     String facilityPhoneNumber;
@@ -21,6 +21,5 @@ public class FundingCompleteDetailResponseDTO {
     String fundingTitle;
     int goalAmount;
     List<FundingMemberDTO> fundingMemberList;
-    Document content;
 
 }

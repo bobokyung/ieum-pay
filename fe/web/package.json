@@ -31,6 +31,7 @@
     "@toss/utils": "^1.4.6",
     "axios": "^1.6.8",
     "dayjs": "^1.11.10",
+    "firebase": "^10.10.0",
     "framer-motion": "^11.0.14",
     "html2canvas": "^1.4.1",
     "html5-qrcode": "^2.3.8",
@@ -43,6 +44,7 @@
     "react-animated-numbers": "^0.18.0",
     "react-circular-progressbar": "^2.1.0",
     "react-dom": "^18",
+    "react-lottie-player": "^2.0.0",
     "sass": "^1.72.0",
     "zustand": "^4.5.2"
   },

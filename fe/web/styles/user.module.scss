@@ -6,8 +6,8 @@
   font-size: 1rem;
   margin: 0.625rem 0 0.625rem 0;
 }
-.startBtnTag {
-}
+// .startBtnTag {
+// }
 .btnTag {
   position: fixed;
   bottom: 0;
@@ -17,10 +17,12 @@
 .btnTagnone {
   display: none;
 }
+
 .complete {
   display: flex;
   flex-direction: column;
   align-items: center;
+  // height: 100%;
   img {
     padding-top: 8rem;
     padding-bottom: 3rem;
@@ -29,11 +31,70 @@
     font-size: 1.5rem;
     color: var(--sub-text);
   }
+  .strongs {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
   strong {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
   .btnComp {
     width: 100%;
-    padding-top: 3rem;
+    // padding-top: 3rem;
+    position: absolute;
+    bottom: 0;
+    padding: 0.625rem 1.25rem;
+  }
+}
+.fundingListBox {
+  height: 100vh;
+  padding-top: 5.5rem;
+  background-color: var(--forthary);
+}
+.modalComp {
+  position: absolute;
+  text-align: center;
+  width: 90%;
+  height: 30%;
+  top: 30%;
+  .modalContainer {
+    align-items: center;
+    text-align: center;
+    padding-top: 20%;
+    p {
+      font-weight: bold;
+    }
+  }
+  .fixed {
+    z-index: 1020;
+  }
+  .modalFooter {
+    width: 100%;
+  }
+}
+
+.imageContainer {
+  padding-left: 1rem;
+  width: 100%;
+  height: 30rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image {
+  width: 95%;
+  // height: 30%;
+}
+.imgBox {
+  display: flex;
+  height: 60vh;
+  align-items: center;
+
+  .img {
+    width: 45%;
+    margin: 0 auto;
   }
 }

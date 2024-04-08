@@ -1,3 +1,11 @@
+.errorContainer {
+  width: 100%;
+  height: 30rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .main {
   width: 100%;
   padding: 0 1.25rem;
@@ -14,10 +22,13 @@
     margin: 1rem 0 2.25rem 0;
     padding: 1.563rem 0.75rem 1.688rem 0.938rem;
     border-radius: 5px;
-    background-color: var(--secondary);
+    background-color: var(--forthary);
     font-size: 1.25rem;
     font-weight: bold;
     text-align: left;
     color: var(--black);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 }

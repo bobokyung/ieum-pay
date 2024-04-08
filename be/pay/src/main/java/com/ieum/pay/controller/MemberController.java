@@ -4,7 +4,7 @@ import com.ieum.pay.request.MemberPayPasswordRequestDTO;
 import com.ieum.pay.request.MyCardCheckRequestDTO;
 import com.ieum.pay.request.RegisterRequestDTO;
 import com.ieum.pay.service.PaymoneyService;
-import com.ieum.pay.service.RegisteredCardService;
+import com.ieum.pay.service.CardRegistrationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class MemberController {
     private final PaymoneyService paymoneyService;
-    private final RegisteredCardService registeredCardService;
+    private final CardRegistrationService cardRegistrationService;
 
     @PostMapping("/register")
     public boolean signUp(@RequestBody RegisterRequestDTO requestDTO){
@@ -27,7 +27,7 @@ public class MemberController {
 
     @PostMapping("/mine")
     public boolean isMine(@RequestBody MyCardCheckRequestDTO requestDTO){
-        return registeredCardService.isMyCard(requestDTO.getMemberId(),requestDTO.getRegisteredCardId());
+        return cardRegistrationService.isMyCard(requestDTO.getMemberId(), requestDTO.getRegisteredCardId());
     }
 
     @GetMapping("/pp/{memberId}")

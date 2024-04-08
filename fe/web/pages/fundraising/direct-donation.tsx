@@ -5,11 +5,14 @@ import { commaizeNumber, formatToKRW } from '@toss/utils';
 import { useRouter } from 'next/router';
 import styles from '@/styles/DirectDonationPage.module.scss';
 import useDonateMoneyInfo from '@/hooks/useDirectDonationStore';
+import useUserStore from '@/stores/user-store';
 
 type KeyElement = string | number | JSX.Element;
 function directDonation() {
   const router = useRouter();
   const { donateMoneyInfo, pushNumber, popNumber } = useDonateMoneyInfo();
+
+  const { userInfo } = useUserStore();
 
   function handleClickNumber(v: KeyElement) {
     pushNumber(Number(v));
@@ -38,7 +41,11 @@ function directDonation() {
       return;
     }
     if (donateMoneyInfo.송금금액 > donateMoneyInfo.잔액) {
-      return <p className={styles.invalid}>출금가능금액 부족</p>;
+      return (
+        <p className={styles.invalid}>부족한 금액은 충전 후 결제됩니다.</p>
+      );
+    } else if (donateMoneyInfo.송금금액 > donateMoneyInfo.남은금액) {
+      return <p className={styles.invalid}>더 이상 기부 불가</p>;
     } else {
       return <>{formatToKRW(donateMoneyInfo.송금금액)}</>;
     }
@@ -77,7 +84,7 @@ function directDonation() {
         onClickConfirm={handleClickConfirm}
         isValid={
           donateMoneyInfo.송금금액 > 0 &&
-          donateMoneyInfo.송금금액 <= donateMoneyInfo.잔액
+          donateMoneyInfo.송금금액 <= donateMoneyInfo.남은금액
         }
       />
     </div>

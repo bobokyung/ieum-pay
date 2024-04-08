@@ -1,5 +1,6 @@
 package com.ieum.common.handle;
 
+import com.ieum.common.exception.auth.SecondAuthInfoNotFoundException;
 import com.ieum.common.exception.cookie.CookieOperationException;
 import com.ieum.common.exception.feign.PaymentServiceUnavailableException;
 import com.ieum.common.exception.funding.FundingResultNotFoundException;
@@ -12,6 +13,7 @@ import com.ieum.common.exception.member.MemberNotFoundByIdException;
 import com.ieum.common.exception.member.MemberNotFoundByPhoneNumberException;
 import com.ieum.common.exception.member.MemberNotFoundException;
 import com.ieum.common.exception.member.PasswordMismatchException;
+import com.ieum.common.exception.pay.PayCardNotFoundException;
 import com.ieum.common.exception.token.TokenOperationException;
 import com.ieum.common.format.code.FailedCode;
 import com.ieum.common.format.response.ResponseTemplate;
@@ -117,6 +119,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(FundingResultNotFoundException.class)
     protected ResponseEntity<?> handle(FundingResultNotFoundException e) {
         log.error("FundingResultNotFoundException = {}", e.getFailedCode().getMessage());
+        return response.error(e.getFailedCode());
+    }
+
+    @ExceptionHandler(PayCardNotFoundException.class)
+    protected ResponseEntity<?> handle(PayCardNotFoundException e) {
+        log.error("PayCardNotFoundException = {}", e.getFailedCode().getMessage());
+        return response.error(e.getFailedCode());
+    }
+
+    @ExceptionHandler(SecondAuthInfoNotFoundException.class)
+    protected ResponseEntity<?> handle(SecondAuthInfoNotFoundException e) {
+        log.error("SecondAuthInfoNotFoundException = {}", e.getFailedCode().getMessage());
         return response.error(e.getFailedCode());
     }
 

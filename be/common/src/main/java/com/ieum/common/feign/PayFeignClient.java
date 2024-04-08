@@ -1,20 +1,30 @@
 package com.ieum.common.feign;
 
+import com.ieum.common.dto.feign.pay.request.CardRegisterRequestDTO;
+import com.ieum.common.dto.feign.pay.request.CardValidRequestDTO;
+import com.ieum.common.dto.feign.pay.request.FundingDonationRequestDTO;
+import com.ieum.common.dto.feign.pay.request.MemberPayPasswordRequestDTO;
+import com.ieum.common.dto.feign.pay.request.MyCardCheckRequestDTO;
+import com.ieum.common.dto.feign.pay.request.PaymentChargeMoney;
+import com.ieum.common.dto.feign.pay.request.PaymentRequestDTO;
+import com.ieum.common.dto.feign.pay.request.RegisterRequestDTO;
+import com.ieum.common.dto.feign.pay.request.RemittanceAccountRequestDTO;
+import com.ieum.common.dto.feign.pay.request.RemittanceRequestDTO;
+import com.ieum.common.dto.feign.pay.response.CardDetailResponseDTO;
+import com.ieum.common.dto.feign.pay.response.DonationReceiptResponseDTO;
+import com.ieum.common.dto.feign.pay.response.FundingDonationResultResponseDTO;
+import com.ieum.common.dto.feign.pay.response.HistoryResponseDTO;
+import com.ieum.common.dto.feign.pay.response.MainSummaryResponseDTO;
+import com.ieum.common.dto.feign.pay.response.PaymentHistoryPayResponseDTO;
+import com.ieum.common.dto.feign.pay.response.RemittanceHistoryResponseDTO;
 import com.ieum.common.dto.paymoney.PayMoneyCreationRequestDto;
-import com.ieum.common.dto.feign.pay.request.*;
-import com.ieum.common.dto.feign.pay.response.*;
 import com.ieum.common.dto.response.CardOcrResponseDTO;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @FeignClient(name = "pay", url = "${gateway.pay}")
 public interface PayFeignClient {
@@ -32,21 +42,18 @@ public interface PayFeignClient {
      * 카드 번호 유효성 검사 기능을 제공하는 메서드
      *
      * @param cardNumber 카드 번호 정보
-     * @return 카드 번호 유효성 검사 결과 - 카드 ID
-     * -1 : 카드 번호 유효성 불가 번호
-     * -2 : 잘못된 카드번호 ( 16자리가 아님, 숫자가 아님)
-     * 양수 : 둥록된 카드 번호 id (registeredCardId)
+     * @return 카드 번호 유효성 검사 결과 - 카드 ID -1 : 카드 번호 유효성 불가 번호 -2 : 잘못된 카드번호 ( 16자리가 아님, 숫자가 아님) 양수 : 둥록된 카드 번호 id (registeredCardId)
      */
     @PostMapping("/card/valid")
     Long isCardNumberValid(@RequestBody CardRegisterRequestDTO cardNumber);
 
     /**
      * 카드 삭 제 기능을 제공하는 메서드
-     *
-     *  삭제할 카드 ID
+     * <p>
+     * 삭제할 카드 ID
      */
-    @PutMapping(value = "/card/delete")
-    boolean deleteCard(@RequestBody CardValidRequestDTO requestDTO);
+    @DeleteMapping(value = "/card/{registeredCardId}/{memberId}")
+    Boolean deleteCard(@PathVariable("registeredCardId") Long registeredCardId, @PathVariable("memberId") Long memberId);
 
     /**
      * 회원의 결제 정보를 생성합니다.
@@ -76,11 +83,8 @@ public interface PayFeignClient {
     /**
      * 카드 등록 메서드
      *
+     * @return -1 : 카드 번호 유효성 불가 번호 -2 : 잘못된 카드번호 ( 16자리가 아님, 숫자가 아님) 양수 : 둥록된 카드 번호 id (registeredCardId)
      * @RequestBody
-     * @return
-     * -1 : 카드 번호 유효성 불가 번호
-     * -2 : 잘못된 카드번호 ( 16자리가 아님, 숫자가 아님)
-     * 양수 : 둥록된 카드 번호 id (registeredCardId)
      */
     @PostMapping("/card/valid")
     Long registerCard(@RequestBody CardRegisterRequestDTO requestDTO);
@@ -146,22 +150,23 @@ public interface PayFeignClient {
     Long remittancePaymoney(@RequestBody RemittanceRequestDTO requestDTO);
 
     @PostMapping("/remittance/account")
-    public Long remittanceAccount(@RequestBody RemittanceAccountRequestDTO requestDTO);
+    Long remittanceAccount(@RequestBody RemittanceAccountRequestDTO requestDTO);
 
     @GetMapping("/donation/{memberId}/{historyId}")
-    public DonationReceiptResponseDTO donationReceipt (@PathVariable("memberId") Long memberId, @PathVariable("historyId") Long historyId);
+    DonationReceiptResponseDTO donationReceipt(@PathVariable("memberId") Long memberId, @PathVariable("historyId") Long historyId);
 
     @PostMapping("/member/mine")
-    public boolean isMine(@RequestBody MyCardCheckRequestDTO requestDTO);
+    boolean isMine(@RequestBody MyCardCheckRequestDTO requestDTO);
 
     @GetMapping("/remittance/{memberId}/{historyId}")
     RemittanceHistoryResponseDTO getRemittanceHistory(@PathVariable("memberId") Long memberId, @PathVariable("historyId") Long historyId);
 
-
-    @GetMapping("/card/{registeredCardId}")
-    String getCardName(@PathVariable("registeredCardId") Long registeredCardId);
+    @GetMapping("/card/{registeredCardId}/name")
+    Optional<String> getCardName(@PathVariable("registeredCardId") Long registeredCardId);
 
     @GetMapping("/member/pp/{memberId}")
     String getPaymentPassword(@PathVariable("memberId") Long memberId);
 
+    @GetMapping("/card/company/{number}")
+    CardDetailResponseDTO getCardCompany(@PathVariable("number") String cardNum);
 }

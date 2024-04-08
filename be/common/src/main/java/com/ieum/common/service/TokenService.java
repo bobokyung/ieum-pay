@@ -7,6 +7,7 @@ import com.ieum.common.exception.token.RefreshTokenNotFoundException;
 import com.ieum.common.exception.token.TokenOperationException;
 import com.ieum.common.jwt.TokenProvider;
 import com.ieum.common.repository.MemberRepository;
+import com.ieum.common.util.CookieUtil;
 import com.ieum.common.util.RedisHashUtil;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ public class TokenService {
     private final MemberRepository memberRepository;
     private final TokenProvider tokenProvider;
     private final RedisHashUtil redisHashUtil;
+    private final CookieUtil cookieUtil;
 
     private final String MEMBER_ID = "member-id";
     private final String ACCESS_TOKEN = "access-token";
@@ -61,29 +63,21 @@ public class TokenService {
     }
 
 
-    /**
-     * 주어진 리프레시 토큰 값으로 새 액세스 토큰을 재발급.
-     *
-     * @param refreshTokenValue 재발급할 리프레시 토큰 값
-     * @return 재발급된 새 액세스 토큰
-     * @throws RefreshTokenNotFoundException 리프레시 토큰이 Redis 에 존재하지 않을 경우
-     * @throws MemberNotFoundException       회원 정보를 찾을 수 없을 경우
-     */
     @Transactional(readOnly = true)
-    public String reIssueAccessToken(String refreshTokenValue) {
+    public String reIssueAccessToken(HttpServletRequest servletRequest) {
 
-        String key = REFRESH_TOKEN_KEY + refreshTokenValue;
+        String key = REFRESH_TOKEN_KEY + cookieUtil.getRefreshTokenValue(servletRequest);
 
-        // 리프레시 토큰에 해당하는 정보를 Redis에서 조회
+        // 리프레시 토큰에 해당하는 정보를 Redis 에서 조회
         Map<String, Object> refreshTokenHash = redisHashUtil.findByKey(key);
         if (refreshTokenHash.isEmpty()) {
-            // 리프레시 토큰이 존재하지 않는 경우 예외 발생
             throw new RefreshTokenNotFoundException();
         }
 
-        // 회원 ID를 이용하여 회원 정보 조회
-        Members members = memberRepository.findById((Long) refreshTokenHash.get(MEMBER_ID))
+        long memberId = Long.parseLong(refreshTokenHash.get(MEMBER_ID).toString());
+        Members members = memberRepository.findById((memberId))
                                           .orElseThrow(MemberNotFoundException::new);
+
         // 새 액세스 토큰 생성
         String updatedAccessToken = tokenProvider.createAccessToken(members);
         // 새 액세스 토큰 정보 업데이트
@@ -100,11 +94,5 @@ public class TokenService {
         return null;
     }
 
-    public String extractAccessToken(String authorization) {
-        if (authorization != null && authorization.startsWith("Bearer ")) {
-            return authorization.substring(7);
-        }
-        return null;
-    }
 
 }

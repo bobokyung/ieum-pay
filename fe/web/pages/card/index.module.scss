@@ -1,3 +1,20 @@
+.cardContainer {
+  padding: 2rem 1.25rem;
+}
+.first {
+  display: flex;
+  max-width: 100%;
+  align-items: center;
+  form {
+    flex-grow: 0; /* 자식 요소가 늘어나지 않도록 함 */
+    flex-shrink: 1; /* 자식 요소가 줄어들 수 있도록 함 */
+    flex-basis: auto; /* 기본 크기를 유지 */
+    input {
+      width: 4rem;
+    }
+  }
+}
+
 .card-number {
   display: flex;
   width: 100%;
@@ -22,6 +39,7 @@
   }
 }
 .subtext {
+  padding: 1.25rem 0 0 0;
   font-size: 0.75rem;
   text-align: center;
   color: var(--sub-text);
@@ -34,8 +52,59 @@
   justify-content: center;
   align-items: center;
   border-radius: 100%;
+  margin-top: 2rem;
   .svg {
     width: 1.188rem;
     height: 1.188rem;
+  }
+}
+.dateCvcContainer {
+  display: flex;
+  justify-content: flex-start;
+  text-align: center;
+  align-items: center;
+  padding: 1.25rem 0;
+  .validDate {
+    margin-right: 2.25rem;
+  }
+  .input {
+    margin: 0;
+    padding: 0;
+    width: 5rem;
+  }
+}
+.password {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.input {
+  margin: 0;
+  padding: 0;
+  width: 3rem;
+}
+.btnCont {
+  position: absolute;
+  width: 90%;
+  bottom: 0;
+}
+.modalComp {
+  position: absolute;
+  text-align: center;
+  width: 90%;
+  height: 30%;
+  top: 30%;
+  .modalContainer {
+    align-items: center;
+    justify-content: center;
+    p {
+      font-size: 1.2rem;
+    }
+  }
+  .fixed {
+    z-index: 1020;
+  }
+  .modalFooter {
+    width: 100%;
   }
 }

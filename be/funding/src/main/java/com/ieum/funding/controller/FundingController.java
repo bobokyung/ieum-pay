@@ -34,7 +34,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class FundingController {
 
     private final FundingService fundingService;
-    private final FundingMembersRepository fundingMembersRepository;
 
     @Operation(summary = "펀딩 상세 조회", description = "선택한 펀딩의 상세 정보를 조회")
     @GetMapping("/{fundingId}/{memberId}/detail")
@@ -91,10 +90,12 @@ public class FundingController {
     public ResponseEntity<FundingDonationResponseDTO> donationDirectly(
         @RequestBody DirectlyDonationRequestDTO request) {
         FundingDonationResponseDTO response = FundingDonationResponseDTO.builder()
-            .fundingId(request.getFundingId())
-            .fundingResult(fundingService.directDonation(request.getFundingId(),
-                request.getMemberId(), request.getAmount()))
-            .build();
+                                                                        .fundingId(request.getFundingId())
+                                                                        .fundingResult(fundingService.directDonation(request.getFundingId(),
+                                                                                                                     request.getMemberId(),
+                                                                                                                     request.getAmount(),
+                                                                            request.getNickname()))
+                                                                        .build();
         return ResponseEntity.ok(response);
     }
 
@@ -144,21 +145,21 @@ public class FundingController {
 
         if (res1 == null) {
             return ResponseEntity.ok(CurrentFundingResultResponseDTO.builder()
-                .fundingId(0L)
-                .facilityName("")
-                .facilityImage("")
-                .fundingTotalAmount(0)
-                .fundingCount(res2.getFundingCount())
-                .build());
+                                                                    .fundingId(0L)
+                                                                    .facilityName("")
+                                                                    .facilityImage("")
+                                                                    .fundingTotalAmount(0)
+                                                                    .fundingCount(res2.getFundingCount())
+                                                                    .build());
         }
 
         return ResponseEntity.ok(CurrentFundingResultResponseDTO.builder()
-            .fundingId(res1.getFundingId())
-            .facilityName(res1.getFacilityName())
-            .facilityImage(res1.getFacilityImage())
-            .fundingTotalAmount(res1.getFundingTotalAmount())
-            .fundingCount(res2.getFundingCount())
-            .build());
+                                                                .fundingId(res1.getFundingId())
+                                                                .facilityName(res1.getFacilityName())
+                                                                .facilityImage(res1.getFacilityImage())
+                                                                .fundingTotalAmount(res1.getFundingTotalAmount())
+                                                                .fundingCount(res2.getFundingCount())
+                                                                .build());
     }
 
     @Operation(summary = "참여한 목록 조회", description = "참여한 펀딩의 목록을 조회합니다.")

@@ -17,22 +17,29 @@
     height: 7.5rem;
   }
   .textBox {
+    margin-top: 10%;
     font-size: 1.25rem;
     font-weight: bold;
     margin-bottom: 1.25rem;
   }
 }
 .facilityContainer {
-  width: 18.25rem;
-  height: 11.813rem;
+  border-radius: 0.75rem;
+  // width: 18.25rem;
+  width: 80%;
+  // height: 11.813rem;
   background-color: var(--forthary);
-  padding-top: 0.563rem;
-  margin-bottom: 3.688rem;
+  padding-top: 3%;
+  padding-bottom: 10%;
   .imageBox {
-    margin: 0 auto 0.5rem auto;
-    height: 6.125rem;
-    width: 10.25rem;
+    margin: 0 auto 3% auto;
+    // height: 6.125rem;
+    // height: 6.125rem;
+    // width: 10.25rem;
+    width: 80%;
     img {
+      border-radius: 0.5rem;
+
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -41,4 +48,13 @@
   .textContainer {
     font-size: 1rem;
   }
+}
+
+.title {
+  font-weight: 600;
+}
+.btn {
+  position: absolute;
+  width: 90%;
+  bottom: 2%;
 }

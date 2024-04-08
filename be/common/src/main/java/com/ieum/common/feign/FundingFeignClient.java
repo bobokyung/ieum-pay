@@ -27,7 +27,7 @@ public interface FundingFeignClient {
     // 펀딩 상세 조회
     @GetMapping(value = "/funding/{fundingId}/{memberId}/detail")
     FundingDetailResponseDTO getFundingDetail(@PathVariable("fundingId") Long fundingId,
-        @PathVariable("memberId") Long memberId);
+                                              @PathVariable("memberId") Long memberId);
 
     // 펀딩 진행중 목록 조회
     @GetMapping(value = "/funding/list/ongoing")
@@ -47,7 +47,6 @@ public interface FundingFeignClient {
 
     // 직접 기부 결제 정보 요청
     @GetMapping(value = "/funding/info/directly/{fundingId}")
-
     FundingInfoResponseDTO getDirectlyFundingInfo(@PathVariable("fundingId") Long fundingId);
 
     // 자동 기부 결제 정보 요청

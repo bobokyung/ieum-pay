@@ -1,13 +1,12 @@
 package com.ieum.funding.repository;
 
 import com.ieum.funding.domain.Funding;
+import com.ieum.funding.dto.FundingDetailBaseDTO;
 import com.ieum.funding.dto.FundingInfoDTO;
 import com.ieum.funding.response.FundingInfoResponseDTO;
-import com.ieum.funding.response.FundingReceiptResponseDTO;
 import com.ieum.funding.response.FundingReceiptResponseFromFDTO;
-import com.ieum.funding.response.FundingSummaryResponseDTO;
-import com.ieum.funding.dto.FundingDetailBaseDTO;
 import com.ieum.funding.response.FundingResultResponseDTO;
+import com.ieum.funding.response.FundingSummaryResponseDTO;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -25,7 +24,7 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
         "f.fundingOpenDate, " +
         "f.fundingFinishDate, " +
         "fac.facilityImage, " +
-        "(SELECT COUNT(fm) as cnt FROM FundingMembers fm WHERE fm.fundingId = f.fundingId), " +
+        "(SELECT COUNT(fm) as cnt FROM FundingMembers fm WHERE fm.fundingId = f.fundingId AND fm.fundingTotalAmount > 0 ), " +
         "f.goalAmount, " +
         "f.currentAmount) " +
         "FROM Funding f " +
@@ -87,13 +86,14 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
     FundingResultResponseDTO getFacilityInfo(Long fundingId);
 
 
-    @Query("SELECT new com.ieum.funding.response.FundingInfoResponseDTO(f.fundingId, " +
-        "(f.goalAmount - f.currentAmount) as amount, " +
-        "fac.facilityName) " +
-        "FROM Funding f " +
-        "JOIN Facilities fac ON f.facilityId = fac.facilityId " +
-        "WHERE f.fundingId IN (" +
-        "SELECT fm.fundingId FROM FundingMembers fm WHERE fm.memberId = :memberId AND fm.autoFundingStatus = true)")
+    @Query("SELECT new com.ieum.funding.response.FundingInfoResponseDTO(" +
+            "f.fundingId, " +
+            "(f.goalAmount - f.currentAmount), " +
+            "fac.facilityName) " +
+            "FROM Funding f " +
+            "JOIN Facilities fac ON f.facilityId = fac.facilityId " +
+            "WHERE f.fundingId IN (SELECT fm.fundingId FROM FundingMembers fm WHERE fm.memberId = :memberId AND fm.isAutoFundingStatus = true)"
+    )
     FundingInfoResponseDTO getAutoDonationInfo(Long memberId);
 
     @Query("SELECT new com.ieum.funding.response.FundingReceiptResponseFromFDTO(" +
@@ -105,9 +105,10 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
     FundingReceiptResponseFromFDTO getReceiptInfo(Long fundingId);
 
     @Query(BASE_QUERY_INFO_LIST +
-            " WHERE f.fundingId in ( SELECT fmm.fundingId FROM FundingMembers fmm " +
-            " where fmm.memberId = :memberId  And fmm.fundingTotalAmount > 0 " +
-            ") "
+        " WHERE f.fundingId in ( SELECT fmm.fundingId FROM FundingMembers fmm " +
+        " WHERE fmm.memberId = :memberId  And fmm.fundingTotalAmount > 0 " +
+        ") "
     )
     List<FundingSummaryResponseDTO> findParticipantFundingList(Long memberId);
+
 }

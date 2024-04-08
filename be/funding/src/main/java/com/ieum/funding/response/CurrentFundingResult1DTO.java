@@ -10,9 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CurrentFundingResult1DTO {
+
     private Long fundingId;
     private String facilityName;
     private String facilityImage;
-    private Integer fundingTotalAmount;
+    private int fundingTotalAmount;
 
 }

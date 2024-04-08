@@ -2,8 +2,9 @@ import useSendMoneyInfo from '@/hooks/useSendMoneyStore';
 import AmountButton from './AmountButton';
 import classes from './AmountButtonList.module.css';
 import useDonateMoneyInfo from '@/hooks/useDirectDonationStore';
-function AmountButtonList() {
-  const { sendMoneyInfo, addAmount, setFullAmount } = useSendMoneyInfo();
+function AmountButtonList({ balance }: { balance?: number }) {
+  const { sendMoneyInfo, addAmount, setFullAmount, setAmount } =
+    useSendMoneyInfo();
   const buttons = [
     {
       text: '+1천',
@@ -38,7 +39,7 @@ function AmountButtonList() {
     {
       text: '전액',
       onClick: () => {
-        setFullAmount();
+        balance ? setAmount(balance) : setFullAmount();
       },
     },
   ];
@@ -93,7 +94,7 @@ function AmountDonateButtonList() {
       },
     },
     {
-      text: '막타',
+      text: '채움',
       onClick: () => {
         setLastAmount();
       },

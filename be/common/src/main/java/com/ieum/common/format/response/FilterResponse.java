@@ -1,6 +1,10 @@
 package com.ieum.common.format.response;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
@@ -10,23 +14,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class FilterResponse {
 
-    private void sendJsonResponse(HttpServletResponse response, int status, String statusMessage, String message,
-                                  Optional<String> actionRequired) throws IOException {
+    private void sendJsonResponse(
+        HttpServletResponse response, int status, String statusMessage, String message, Optional<String> actionRequired
+    ) throws IOException {
 
         log.info("Sending JSON response - Status: {}, Message: {}", statusMessage, message);
+
+        Gson gson = new Gson();
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("status", statusMessage);
+        responseBody.put("message", message);
+        actionRequired.ifPresent(action -> responseBody.put("actionRequired", action));
+        String jsonString = gson.toJson(responseBody);
+
         response.setStatus(status);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-
-        String actionRequiredJson = actionRequired.map(action -> ", \"actionRequired\": \"" + action + "\"")
-                                                  .orElse("");
-        String body = String.format("""
-                                        {
-                                          "status": "%s",
-                                          "message": "%s",
-                                          %s
-                                        }""", statusMessage, message, actionRequiredJson);
-        response.getWriter().write(body);
+        response.getWriter().write(jsonString);
     }
 
     public void sendTokenReissueResponse(HttpServletResponse response) throws IOException {

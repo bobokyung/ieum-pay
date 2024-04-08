@@ -4,7 +4,8 @@ import lombok.Data;
 
 @Data
 public class PayRemittancePaymoneyRequestDTO {
-    String authenticationKey;
-    String phoneNumber;
-    int amount;
+
+    private String authenticationKey;
+    private String phoneNumber;
+    private int amount;
 }

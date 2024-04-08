@@ -18,6 +18,7 @@ public enum FailedCode {
     /* Authentication and Access */
     AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "인증에 실패하였습니다. 로그인이 필요합니다."),
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+    AUTHENTICATION_2FA_FAILED(HttpStatus.UNAUTHORIZED, "2차 비밀번호 인증에 실패하였습니다."),
 
     /* Member */
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
@@ -50,6 +51,10 @@ public enum FailedCode {
 
     /* Funding */
     FUNDING_RESULT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 후원 결과를 찾을 수 없습니다."),
+
+    /* Second Authentication */
+    SECOND_AUTH_INFO_NOT_FOUND(HttpStatus.BAD_REQUEST, "2차 인증 정보가 레디스에 저장되어 있지 않습니다."),
+    SECOND_AUTH_VERIFICATION_FAILED(HttpStatus.BAD_REQUEST, "2차 인증 검증에 실패하였습니다."),
 
     ;
 

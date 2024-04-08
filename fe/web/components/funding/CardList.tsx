@@ -1,5 +1,6 @@
 import styles from '@/styles/FundPage.module.scss';
 import { Progress } from '@nextui-org/react';
+import dayjs from 'dayjs';
 import Link from 'next/link';
 interface fundingList {
   fundingId: number;
@@ -15,7 +16,8 @@ interface CardListProps {
   fundingList: fundingList[];
   isOngoing: boolean;
 }
-function CardList({ fundingList, isOngoing }: CardListProps) {
+
+export function CardTypeSelectTab({ fundingList, isOngoing }: CardListProps) {
   return (
     <>
       <div>
@@ -23,9 +25,16 @@ function CardList({ fundingList, isOngoing }: CardListProps) {
           ? `진행중인 모금 ${fundingList.length}`
           : `완료된 모금 ${fundingList.length}`}
       </div>
+    </>
+  );
+}
+
+export function CardList({ fundingList, isOngoing }: CardListProps) {
+  return (
+    <>
       <div className={styles.cardContainer}>
         {fundingList.map((unit) => (
-          <Link href={`fundraising/${unit.fundingId}`} key={unit.fundingId}>
+          <Link href={`/fundraising/${unit.fundingId}`} key={unit.fundingId}>
             <div className={styles.card}>
               <div className={styles.imageBox}>
                 <img
@@ -36,7 +45,9 @@ function CardList({ fundingList, isOngoing }: CardListProps) {
               </div>
               <div className={styles.cardTextContiner}>
                 <div>{unit.facilityName}</div>
-                <div>{unit.fundingOpenDate}</div>
+                <div>
+                  {dayjs(unit.fundingOpenDate).format('YYYY년 M월 D일')}~
+                </div>
                 <div>
                   <div className={styles.cntProgressText}>
                     <div>{unit.fundingPeopleCnt}명 참여중</div>
@@ -69,4 +80,4 @@ function CardList({ fundingList, isOngoing }: CardListProps) {
   );
 }
 
-export default CardList;
+// export default { CardList, CardTypeSelectTab };

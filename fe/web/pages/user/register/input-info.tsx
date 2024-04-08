@@ -5,7 +5,7 @@ import {
   EyeFilledIcon,
   EyeSlashFilledIcon,
 } from '@/components/icons/PasswordIcon';
-import styes from '@/styles/input-info.module.css';
+import styes from '@/styles/input-info.module.scss';
 import { useRouter } from 'next/router';
 import Button from '@/stories/Button';
 import PageTitleLeft from '@/components/PageTitleLeft';
@@ -33,9 +33,9 @@ export default function inputInfo() {
     const newValue = evnet.target.value;
     setNameValue(newValue);
 
-    // 한글만 허용
-    const idRegExp = /^(?=.*[ㄱ-ㅎ|ㅏ-ㅣ|가-힣])[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]{2,50}$/;
-    if (newValue.length > 1 && !idRegExp.test(newValue)) {
+    // 한글만 허용/^[가-힣]+$/
+    const idRegExp = /^(?=.*[가-힣])[가-힣]{2,10}$/;
+    if (newValue.length > 2 && !idRegExp.test(newValue)) {
       setNameIsValid(true);
     } else {
       setNameIsValid(false);
@@ -46,8 +46,12 @@ export default function inputInfo() {
     const newValue = event.target.value;
     setNickNameValue(newValue);
     // 특수문자 허용 안함
-    const idRegExp = /[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/;
-    if (idRegExp.test(newValue)) {
+    const idRegExp = /[`ㄱ-ㅎ|ㅏ-ㅣ|~!@#$%^&*()_|+\-=?;:'" ,.<>\{\}\[\]\\\/]/;
+    if (
+      idRegExp.test(newValue) &&
+      newValue.length < 11 &&
+      newValue.length >= 2
+    ) {
       setNicknameIsValid(true);
     } else {
       setNicknameIsValid(false);
@@ -59,7 +63,7 @@ export default function inputInfo() {
     const newValue = event.target.value;
     // 영어소문자, 숫자, 특수문자 포함 여부 확인 8 자 이상 20자 이하
     const idRegExp =
-      /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*#?&])[a-zA-Z\d@$!%*#?&]{8,20}$/;
+      /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,20}$/;
 
     setPasswordValue(newValue);
 
@@ -68,17 +72,18 @@ export default function inputInfo() {
       setIsValid(true);
     } else {
       setIsInValid(false);
+      setIsValid(false);
     }
   };
 
   const handleClick = () => {
-    if (cnt == 0 && isValid) {
+    if (cnt == 0 && !isValid) {
       setCnt(1);
       setNicknameVisible(true);
-    } else if (cnt == 1) {
+    } else if (cnt == 1 && !nicknameIsValid) {
       setCnt(2);
       setNameVisible(true);
-    } else {
+    } else if (cnt == 2 && !nameIsValid) {
       setPassword(userPassword);
       setUserName(userName);
       setUserNickname(userNickName);
@@ -100,33 +105,45 @@ export default function inputInfo() {
       <div className={nameVisible ? '' : styes.isVisible}>
         <Input
           label="이름"
+          classNames={{
+            inputWrapper: styes.inputWrapper,
+          }}
           variant="underlined"
           onChange={handlNameValue}
           value={userName}
           isInvalid={nameIsValid}
-          errorMessage={nameIsValid && '한글로 작성해 주세요'}
+          errorMessage={nameIsValid && '이름을 올바른 형식으로 입력해주세요'}
         ></Input>
       </div>
       <div className={nicknameVisible ? '' : styes.isVisible}>
         <Input
           label="닉네임"
           variant="underlined"
+          classNames={{
+            inputWrapper: styes.inputWrapper,
+          }}
           onChange={handleNicknameValue}
           value={userNickName}
           isInvalid={nicknameIsValid}
-          errorMessage={nicknameIsValid && '특수문자 넣으시면 안돼요'}
+          errorMessage={
+            nicknameIsValid &&
+            '특수문자를 제외한 2글자 이상 10자 이하로 해주세요'
+          }
         ></Input>
       </div>
       <Input
         label="비밀번호"
         variant="underlined"
+        classNames={{
+          inputWrapper: styes.inputWrapper,
+        }}
         value={userPassword}
         onChange={handlePasswordInput}
         isInvalid={isInValid}
         description={isValid && '사용 가능 합니다'}
         errorMessage={
           isInValid &&
-          '8~20자의 영문, 숫자, 특수문자를 모두 포함한 비밀번호를 입력해주세요'
+          '8~20자의 영문 대소문자, 숫자, 특수문자를 모두 포함한 비밀번호를 입력해주세요'
         }
         endContent={
           <button
@@ -147,6 +164,9 @@ export default function inputInfo() {
         isDisabled
         type="text"
         label="휴대폰 번호"
+        classNames={{
+          inputWrapper: styes.inputWrapper,
+        }}
         variant="underlined"
         value={userInfo.phoneNumber}
       />

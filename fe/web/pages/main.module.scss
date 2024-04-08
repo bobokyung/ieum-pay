@@ -1,6 +1,39 @@
+.errorContainer {
+  width: 100vw;
+  height: 30rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .main {
   padding: 0.625rem 1.25rem;
 }
+
+.top {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: end;
+  align-content: center;
+}
+.moneyContainer {
+  margin: 0.625rem 0;
+  position: absolute;
+  bottom: 11rem;
+  width: calc(100% - 2.5rem);
+}
+
+.btnContainer {
+  width: 100%;
+  padding: 0 1.25rem;
+  position: fixed;
+  bottom: 6.8rem;
+}
+
+// 카드
+$cardPosition: 0;
+$cardOffset: 3rem;
+$cardWidth: 20rem;
 
 .cardsContainer {
   display: flex;
@@ -9,22 +42,61 @@
   margin: 0.625rem 0;
 }
 
-.moneyContainer {
-  // margin: 0.625rem 0;
-}
-
-$cardWidth: 18rem;
-.card {
-  width: $cardWidth;
-  height: $cardWidth / 1.58;
+.cardStack {
+  // display: inline-block;
   text-align: center;
-  background-color: rgb(65, 103, 214);
-  border-radius: 0.6rem;
+  // position: relative;
+  // left: 100%;
+  // transform: translateX(-($cardWidth)) translateY(10rem);
+  transform: translateX(-($cardWidth / 2)) translateY(6rem);
 }
 
-.btnContainer {
-  width: 100%;
-  padding: 0 1.25rem;
-  position: fixed;
-  bottom: 5rem;
+.empty {
+  display: block;
+  width: 18.25rem;
+  height: 12.063rem;
+  margin: 2.313rem 2.188rem 3.5rem 2.063rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  border-radius: 8px;
+  background-color: var(--forthary);
+  text-align: center;
+
+  font-weight: bold;
+  color: var(--sub-text);
+}
+
+.modalComp {
+  position: absolute;
+  text-align: center;
+  width: 90%;
+  height: 30%;
+  top: 30%;
+  .modalContainer {
+    align-items: center;
+    justify-content: center;
+    p {
+      font-size: 1.2rem;
+    }
+  }
+  .fixed {
+    z-index: 1020;
+  }
+  .modalFooter {
+    width: 100%;
+  }
+}
+.policy {
+  padding: 1.2rem;
+}
+.passwordConatiner {
+  padding: 6rem 1.25rem;
+  .inputWrapper {
+    padding: 1.25rem 0 0 0;
+  }
+  .btn {
+    margin-top: 1.25rem;
+  }
 }

@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 public class CardValidRequestDTO {
-    Long memberId;
-    Long registeredCardId;
+
+    private Long memberId;
+    private Long registeredCardId;
 }

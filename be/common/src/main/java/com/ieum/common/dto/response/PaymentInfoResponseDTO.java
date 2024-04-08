@@ -1,17 +1,24 @@
 package com.ieum.common.dto.response;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
+@Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PaymentInfoResponseDTO {
-    Long storeId;
-    int price;
-    String cardNickname;
-    String storeName;
-    String facilityName;
-    int paymoneyAmount;
-    int chargeAmount;
-    int donationMoney;
+
+    private Long storeId;
+    private int price;
+    private String cardNickname;
+    private String storeName;
+    private String facilityName;
+    private int paymoneyAmount;
+    private int chargeAmount;
+    private int donationMoney;
+
 }

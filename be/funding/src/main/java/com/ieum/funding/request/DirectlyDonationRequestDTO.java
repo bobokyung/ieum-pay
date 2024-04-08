@@ -11,4 +11,5 @@ public class DirectlyDonationRequestDTO {
     private Long fundingId;
     private Long memberId;
     private Integer amount;
+    private String nickname;
 }

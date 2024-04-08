@@ -6,7 +6,7 @@ export function middleware(request: NextRequest) {
   // 리다이렉트 조건
   if (!request.cookies.get('access_token')) {
     //   if (!getCookie('access_token')) {
-    return NextResponse.redirect(new URL('/user', request.url));
+    return NextResponse.redirect(new URL('/landing', request.url));
   }
 }
 
