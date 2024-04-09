@@ -1,4 +1,4 @@
-package config;
+package com.ieum.mms.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;

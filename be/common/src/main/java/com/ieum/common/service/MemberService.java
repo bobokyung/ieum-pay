@@ -338,8 +338,8 @@ public class MemberService {
     private boolean isPhoneNumberConfirmed(String phoneNumber) {
         String redisKey = "confirmed-phone-number:" + phoneNumber;
         String confirmedValue = stringRedisTemplate.opsForValue().get(redisKey);
-        // return Boolean.parseBoolean(confirmedValue);
-        return true; // 시연용 true 반환
+        return Boolean.parseBoolean(confirmedValue);
+        // return true; // 시연용 true 반환
     }
 
     /**

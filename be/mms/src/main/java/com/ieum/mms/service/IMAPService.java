@@ -1,4 +1,4 @@
-package com.ieum.common.service;
+package com.ieum.mms.service;
 
 import com.sun.mail.imap.IMAPFolder;
 import java.io.IOException;
@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -98,6 +97,7 @@ public class IMAPService {
 
                             ValueOperations<String, String> valueOps = stringRedisTemplate.opsForValue();
                             String code = valueOps.get("phone-number:" + phoneNumber);
+                            log.info(phoneNumber);
                             if (code == null) {
                                 log.info("Redis 에 인증 코드가 없음", phoneNumber);
                                 continue;
